@@ -327,34 +327,42 @@ export const Component = () => {
 
       const refs=threeRefs.current;
 
-      // Camera zoom-in across 3 waypoints (original values)
+      /*
+       * Camera: 3 proper segments that map 1:1 with the 3 content sections.
+       *   Seg 0 (OFFBOARDER  0→0.33): z 300→80  — pull back view zooms in slowly
+       *   Seg 1 (MA SHEBA AI 0.33→0.66): z 80→-700 — mountains vanish at 0.38,
+       *          camera rushes into deep space (the "zoom until MA SHEBA AI" effect)
+       *   Seg 2 (NEXUS       0.66→1.0): stays near -700 — full deep-space scene
+       */
       const camPositions=[
-        {x:0,y:30,z:300},
-        {x:0,y:40,z:-50},
-        {x:0,y:50,z:-700},
+        {x:0,y:30,z:300},   // OFFBOARDER — wide horizon
+        {x:0,y:35,z:80},    // MA SHEBA AI — close to mountains (stays in front at z>-50)
+        {x:0,y:50,z:-700},  // NEXUS — deep space / nebula
       ];
-      const totalProgress=progress*2;                // totalSections=2
-      const newSection=Math.min(Math.floor(totalProgress),1);
-      const sectionProgress=totalProgress%1;
-      const cPos=camPositions[newSection]??camPositions[0];
-      const nPos=camPositions[newSection+1]??cPos;
-      refs.targetCameraX=cPos.x+(nPos.x-cPos.x)*sectionProgress;
-      refs.targetCameraY=cPos.y+(nPos.y-cPos.y)*sectionProgress;
-      refs.targetCameraZ=cPos.z+(nPos.z-cPos.z)*sectionProgress;
+      const seg=Math.min(Math.floor(progress*3),2);
+      const segP=(progress*3)%1;
+      const from=camPositions[seg];
+      const to=camPositions[Math.min(seg+1,2)];
+      refs.targetCameraX=from.x+(to.x-from.x)*segP;
+      refs.targetCameraY=from.y+(to.y-from.y)*segP;
+      refs.targetCameraZ=from.z+(to.z-from.z)*segP;
 
-      // Mountain parallax (exact original logic)
+      /*
+       * Mountains: vanish at progress=0.38 (early in MA SHEBA AI section).
+       * This ensures:
+       *  - OFFBOARDER: full mountain silhouette visible
+       *  - MA SHEBA AI: mountains present briefly at start, then disappear as
+       *    camera rushes into deep space (no camera-clipping-through-mountain)
+       *  - NEXUS: always deep space, mountains long gone
+       */
       refs.mountains.forEach((mountain,i)=>{
-        const speed=1+i*0.9;
-        const targetZ=mountain.userData.baseZ+scrollY*speed*0.5;
-        if(refs.nebula) refs.nebula.position.z=(targetZ+progress*speed*0.01)-100;
-        mountain.userData.targetZ=targetZ;
-        if(progress>0.7){
-          mountain.position.z=600000;
+        if(progress>0.38){
+          mountain.position.z=600000;  // send to fog — instant disappear
         } else if(refs.locations[i]!==undefined){
           mountain.position.z=refs.locations[i];
         }
       });
-      if(refs.nebula&&refs.mountains[3]) refs.nebula.position.z=refs.mountains[3].position.z;
+      if(refs.nebula) refs.nebula.position.z=progress>0.38?-1050:-1050;
     };
 
     window.addEventListener('scroll',handleScroll,{passive:true});
@@ -370,6 +378,9 @@ export const Component = () => {
 
         {/* WebGL Canvas */}
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" style={{zIndex:0}} />
+
+        {/* Dark gradient at the very top — guarantees title is legible against any background (sky, bloom, nebula) */}
+        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/70 via-black/30 to-transparent z-10 pointer-events-none" />
 
         {/* Side menu (matches original) */}
         <div
@@ -387,54 +398,74 @@ export const Component = () => {
           </div>
         </div>
 
-        {/* Content — title at top-center, card below, matching reference layout */}
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-start pt-[12vh] text-center pointer-events-none select-none">
+        {/*
+         * Content layout — two zones separated by flex-1:
+         *   TOP  : title + subtitle  (pinned to top)
+         *   SPACE: flex-1 fills whatever remains
+         *   BOTTOM: info card        (pinned above mountains)
+         * This guarantees no overlap regardless of title length or viewport size.
+         */}
+        <div className="absolute inset-0 z-20 flex flex-col items-center pointer-events-none select-none">
 
-          {/* Large project title */}
-          <h1
-            key={project.key}
-            className="text-[clamp(3.5rem,13vw,9.5rem)] font-black tracking-[-0.02em] uppercase leading-none text-white mb-4"
-            style={{
-              textShadow:'0 0 100px rgba(255,255,255,0.15), 0 2px 40px rgba(0,0,0,0.8)',
-              WebkitTextStroke:'1px rgba(255,255,255,0.15)',
-            }}
-          >
-            {project.title}
-          </h1>
+          {/* ── TOP ZONE ── title + subtitle ─────────────────────────────── */}
+          {/* pt-[4.5rem] = 72px — safely clears fixed navbar (~16px top-4 + ~52px height) */}
+          <div className="flex flex-col items-center text-center w-full pt-[4.5rem] px-4 md:pt-20">
+            <h1
+              key={project.key}
+              className="text-[clamp(2.5rem,9vw,7.5rem)] font-black tracking-[-0.02em] uppercase leading-none text-white mb-3"
+              style={{
+                /* Strong dark shadows ensure legibility on bright nebula/bloom backgrounds */
+                textShadow:[
+                  '0 0 0 rgba(0,0,0,0)',           // crisp base
+                  '0 2px 4px rgba(0,0,0,1)',        // tight dark drop
+                  '0 4px 20px rgba(0,0,0,0.95)',    // medium spread
+                  '0 8px 60px rgba(0,0,0,0.85)',    // wide spread
+                  '0 0 120px rgba(0,0,0,0.7)',      // glow kill
+                ].join(', '),
+              }}
+            >
+              {project.title}
+            </h1>
+            {/* Subtitle: white/80 and slightly larger so it reads against any background */}
+            <p className="text-xs md:text-sm font-semibold uppercase tracking-[0.25em] text-white/80"
+               style={{textShadow:'0 1px 8px rgba(0,0,0,0.9), 0 2px 20px rgba(0,0,0,0.8)'}}>
+              {project.subtitle}&nbsp;·&nbsp;{project.tagline}
+            </p>
+          </div>
 
-          {/* Subtitle */}
-          <p className="text-xs md:text-sm font-semibold uppercase tracking-[0.3em] text-white/60 mb-8 px-4">
-            {project.subtitle} &nbsp;·&nbsp; {project.tagline}
-          </p>
+          {/* ── SPACER — pushes card to bottom ───────────────────────────── */}
+          <div className="flex-1" />
 
-          {/* Project card */}
-          <div
-            ref={cardRef}
-            className="max-w-2xl w-full mx-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-left bg-black/60 border border-white/[0.12] p-5 md:p-6 rounded-2xl backdrop-blur-lg shadow-2xl pointer-events-auto"
-          >
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-slate-300 leading-relaxed">{project.description}</p>
-              <div className="border-l-2 border-cyan-400 pl-3 text-xs text-cyan-200/80">
-                <span className="font-semibold">Impact:</span> {project.impact}
+          {/* ── BOTTOM ZONE ── project info card ─────────────────────────── */}
+          <div className="w-full max-w-2xl px-4 pb-[14vh] pointer-events-auto">
+            <div
+              ref={cardRef}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left bg-black/65 border border-white/[0.1] p-5 md:p-6 rounded-2xl backdrop-blur-xl shadow-[0_8px_60px_rgba(0,0,0,0.6)]"
+            >
+              <div className="flex flex-col gap-3">
+                <p className="text-sm text-slate-300 leading-relaxed">{project.description}</p>
+                <div className="border-l-2 border-cyan-400 pl-3 text-xs text-cyan-200/80">
+                  <span className="font-semibold">Impact:</span> {project.impact}
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col justify-between gap-4">
-              <div className="flex flex-wrap gap-1.5">
-                {project.tech.map(t=>(
-                  <span key={t} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs font-medium text-white/80">{t}</span>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <a href={project.repo} target="_blank" rel="noreferrer"
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-cyan-400 px-4 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.25)]">
-                  Repository <ArrowUpRight size={13}/>
-                </a>
-                {hasDocs(project)&&(
-                  <a href={project.docs} target="_blank" rel="noreferrer"
-                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10">
-                    Docs <BookOpen size={13}/>
+              <div className="flex flex-col justify-between gap-4">
+                <div className="flex flex-wrap gap-1.5">
+                  {project.tech.map(t=>(
+                    <span key={t} className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs font-medium text-white/80">{t}</span>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <a href={project.repo} target="_blank" rel="noreferrer"
+                    className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-cyan-400 px-4 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 shadow-[0_0_20px_rgba(34,211,238,0.25)]">
+                    Repository <ArrowUpRight size={13}/>
                   </a>
-                )}
+                  {hasDocs(project)&&(
+                    <a href={project.docs} target="_blank" rel="noreferrer"
+                      className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-4 text-sm font-semibold text-white transition hover:bg-white/10">
+                      Docs <BookOpen size={13}/>
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
