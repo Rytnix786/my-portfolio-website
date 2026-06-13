@@ -71,7 +71,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${archivo.variable} ${spaceGrotesk.variable} scroll-smooth`}>
+    <html lang="en" className={`${archivo.variable} ${spaceGrotesk.variable} scroll-smooth`} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

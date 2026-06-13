@@ -9,7 +9,7 @@ export function Navbar() {
 
   return (
     <motion.header
-      initial={false}
+      initial={{ opacity: 1, y: 0 }}
       animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: "easeOut" }}
       className="fixed inset-x-0 top-4 z-50 px-4"

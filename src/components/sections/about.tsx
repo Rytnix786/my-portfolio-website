@@ -1,5 +1,6 @@
 import { Reveal } from "@/components/motion/reveal";
 import { GlassCard } from "@/components/ui/glass-card";
+import { metrics } from "@/data/portfolio";
 
 export function About() {
   return (
@@ -30,7 +31,22 @@ export function About() {
             </div>
           </GlassCard>
         </Reveal>
+
+        <Reveal delay={0.15}>
+          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {metrics.map((metric) => (
+              <div 
+                key={metric.label} 
+                className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 backdrop-blur transition duration-200 hover:border-cyan-300/25 hover:bg-cyan-300/[0.02]"
+              >
+                <div className="font-display text-3xl font-semibold text-cyan-300">{metric.value}</div>
+                <div className="mt-2 text-sm leading-5 text-slate-400">{metric.label}</div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
       </div>
     </section>
   );
 }
+
