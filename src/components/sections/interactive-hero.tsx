@@ -12,7 +12,7 @@ export function InteractiveHero() {
   };
 
   const handleContactMe = () => {
-    window.location.href = `mailto:${profile.email}`;
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${profile.email}`, "_blank");
   };
 
   return (
