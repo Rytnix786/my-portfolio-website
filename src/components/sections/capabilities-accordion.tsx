@@ -11,7 +11,7 @@ const customAccordionItems: AccordionItemData[] = [
   {
     id: 2,
     title: 'Agentic Workflows',
-    imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1974&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=2070',
   },
   {
     id: 3,

@@ -48,7 +48,7 @@ export function Hero() {
               View projects
               <ArrowDown size={17} />
             </ButtonLink>
-            <ButtonLink href={`mailto:${profile.email}`}>
+            <ButtonLink href={`https://mail.google.com/mail/?view=cm&fs=1&to=${profile.email}`}>
               Contact me
               <Mail size={17} />
             </ButtonLink>

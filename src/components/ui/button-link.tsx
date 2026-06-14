@@ -12,9 +12,9 @@ type ButtonLinkProps = {
 
 const variants = {
   primary:
-    "border-cyan-300/70 bg-cyan-300 text-slate-950 shadow-[0_0_32px_rgba(34,211,238,0.22)] hover:bg-cyan-200",
+    "border-[#10b981]/70 bg-[#10b981] text-[#020804] shadow-[0_0_24px_rgba(16,185,129,0.3)] hover:bg-[#34d399]",
   secondary:
-    "border-white/12 bg-white/[0.06] text-slate-100 hover:border-cyan-300/45 hover:bg-cyan-300/10",
+    "border-white/12 bg-white/[0.06] text-slate-100 hover:border-[#10b981]/45 hover:bg-[#10b981]/10",
   ghost: "border-transparent text-slate-300 hover:text-white",
 };
 
@@ -27,7 +27,7 @@ export function ButtonLink({
   className = "",
   ...props
 }: ButtonLinkProps) {
-  const classes = `inline-flex min-h-12 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold tracking-tight transition duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ${variants[variant]} ${className}`;
+  const classes = `inline-flex min-h-12 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold tracking-tight transition duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#10b981] ${variants[variant]} ${className}`;
 
   if (external || href.startsWith("http") || href.startsWith("mailto:")) {
     return (

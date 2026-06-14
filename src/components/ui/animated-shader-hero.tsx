@@ -8,11 +8,11 @@ export interface HeroProps {
     text: string;
     icons?: string[];
   };
-  headline: {
+  headline?: {
     line1: string;
     line2: string;
   };
-  subtitle: string;
+  subtitle?: string;
   buttons?: {
     primary?: {
       text: string;
@@ -24,6 +24,7 @@ export interface HeroProps {
     };
   };
   className?: string;
+  children?: React.ReactNode;
 }
 
 // Reusable Shader Background Hook
@@ -334,134 +335,291 @@ const Hero: React.FC<HeroProps> = ({
   headline,
   subtitle,
   buttons,
-  className = ""
+  className = "",
+  children
 }) => {
   const canvasRef = useShaderBackground();
 
   return (
-    <div className={`relative w-full h-screen overflow-hidden bg-black ${className}`}>
+    <div className={`relative w-full h-screen overflow-hidden bg-[#020804] ${className}`}>
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full object-contain touch-none"
-        style={{ background: 'black' }}
+        style={{ background: '#020804' }}
       />
       
-      {/* Hero Content Overlay with Offset to prevent fixed navbar overlapping */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-white bg-slate-950/20 pt-24 pb-12 pointer-events-none">
-
-
-        <div className="text-center space-y-6 max-w-5xl mx-auto px-4 pointer-events-auto">
-          {/* Main Heading with Animation (Cyan-to-Blue Gradients) */}
-          <div className="space-y-3">
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-300 bg-clip-text text-transparent animate-fade-in-up animation-delay-200 tracking-tight">
-              {headline.line1}
-            </h1>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-blue-300 via-cyan-400 to-teal-300 bg-clip-text text-transparent animate-fade-in-up animation-delay-400 tracking-tight">
-              {headline.line2}
-            </h1>
-          </div>
-          
-          {/* Subtitle with Animation */}
-          <div className="max-w-3xl mx-auto animate-fade-in-up animation-delay-600">
-            <p className="text-lg md:text-xl lg:text-2xl text-slate-300 font-light leading-relaxed">
-              {subtitle}
-            </p>
-          </div>
-          
-          {/* CTA Buttons with Animation */}
-          {buttons && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 animate-fade-in-up animation-delay-800">
-              {buttons.primary && (
-                <button 
-                  onClick={buttons.primary.onClick}
-                  className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/25 shadow-[0_0_32px_rgba(34,211,238,0.22)]"
-                >
-                  {buttons.primary.text}
-                </button>
-              )}
-              {buttons.secondary && (
-                <button 
-                  onClick={buttons.secondary.onClick}
-                  className="px-8 py-4 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-300/30 hover:border-cyan-300/50 text-cyan-100 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm"
-                >
-                  {buttons.secondary.text}
-                </button>
-              )}
-            </div>
-          )}
+      {/* Hero Content Overlay */}
+      {children ? (
+        <div className="absolute inset-0 z-10">
+          {children}
         </div>
-      </div>
+      ) : (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-white bg-[#020804]/30 pt-24 pb-12 pointer-events-none">
+          <div className="text-center space-y-6 max-w-5xl mx-auto px-4 pointer-events-auto">
+            {/* Main Heading with Animation (Cyan-to-Blue Gradients) */}
+            {headline && (
+              <div className="space-y-3">
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-300 bg-clip-text text-transparent animate-fade-in-up animation-delay-200 tracking-tight">
+                  {headline.line1}
+                </h1>
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-blue-300 via-cyan-400 to-teal-300 bg-clip-text text-transparent animate-fade-in-up animation-delay-400 tracking-tight">
+                  {headline.line2}
+                </h1>
+              </div>
+            )}
+            
+            {/* Subtitle with Animation */}
+            {subtitle && (
+              <div className="max-w-3xl mx-auto animate-fade-in-up animation-delay-600">
+                <p className="text-lg md:text-xl lg:text-2xl text-slate-300 font-light leading-relaxed">
+                  {subtitle}
+                </p>
+              </div>
+            )}
+            
+            {/* CTA Buttons with Animation */}
+            {buttons && (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8 animate-fade-in-up animation-delay-800">
+                {buttons.primary && (
+                  <button 
+                    onClick={buttons.primary.onClick}
+                    className="px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/25 shadow-[0_0_32px_rgba(34,211,238,0.22)]"
+                  >
+                    {buttons.primary.text}
+                  </button>
+                )}
+                {buttons.secondary && (
+                  <button 
+                    onClick={buttons.secondary.onClick}
+                    className="px-8 py-4 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-300/30 hover:border-cyan-300/50 text-cyan-100 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+                  >
+                    {buttons.secondary.text}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 const defaultShaderSource = `#version 300 es
-/*********
-* made by Matthias Hurrle (@atzedent)
-*
-*	To explore strange new worlds, to seek out new life
-*	and new civilizations, to boldly go where no man has
-*	gone before.
-*/
 precision highp float;
-out vec4 O;
+out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
+uniform vec2 touch;
+uniform int pointerCount;
+
 #define FC gl_FragCoord.xy
-#define T time
 #define R resolution
-#define MN min(R.x,R.y)
-// Returns a pseudo random number for a given point (white noise)
-float rnd(vec2 p) {
-  p=fract(p*vec2(12.9898,78.233));
-  p+=dot(p,p+34.56);
-  return fract(p.x*p.y);
+#define T time
+
+// Hash functions
+float hash11(float p) {
+  p = fract(p * .1031);
+  p *= p + 33.33;
+  p *= p + p;
+  return fract(p);
 }
-// Returns a pseudo random number for a given point (value noise)
-float noise(in vec2 p) {
-  vec2 i=floor(p), f=fract(p), u=f*f*(3.-2.*f);
-  float
-  a=rnd(i),
-  b=rnd(i+vec2(1,0)),
-  c=rnd(i+vec2(0,1)),
-  d=rnd(i+1.);
-  return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);
+
+vec2 hash22(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.xx + p3.yz) * p3.zy);
 }
-// Returns a pseudo random number for a given point (fractal noise)
-float fbm(vec2 p) {
-  float t=.0, a=1.; mat2 m=mat2(1.,-.5,.2,1.2);
-  for (int i=0; i<5; i++) {
-    t+=a*noise(p);
-    p*=2.*m;
-    a*=.5;
-  }
-  return t;
+
+// Distance from a point p to a line segment ab
+float df_line(vec2 p, vec2 a, vec2 b) {
+  vec2 pa = p - a, ba = b - a;
+  float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+  return length(pa - ba * h);
 }
-float clouds(vec2 p) {
-	float d=1., t=.0;
-	for (float i=.0; i<3.; i++) {
-		float a=d*fbm(i*10.+p.x*.2+.2*(1.+i)*p.y+d+i*i+p);
-		t=mix(t,d,a);
-		d=a;
-		p*=2./(i+1.);
-	}
-	return t;
-}
+
 void main(void) {
-	vec2 uv=(FC-.5*R)/MN,st=uv*vec2(2,1);
-	vec3 col=vec3(0);
-	float bg=clouds(vec2(st.x+T*.5,-st.y));
-	uv*=1.-.3*(sin(T*.2)*.5+.5);
-	for (float i=1.; i<12.; i++) {
-		uv+=.1*cos(i*vec2(.1+.01*i, .8)+i*i+T*.5+.1*uv.x);
-		vec2 p=uv;
-		float d=length(p);
-		col+=.00125/d*(cos(sin(i)*vec3(0.1,1.2,2.0))+1.);
-		float b=noise(i+p+bg*1.731);
-		col+=.002*b/length(max(p,vec2(b*p.x*.02,p.y)));
-		col=mix(col,vec3(bg*.02,bg*.08,bg*.18),d);
-	}
-	O=vec4(col,1);
-}`;
+  // Center and normalize UVs
+  vec2 uv = (FC - 0.5 * R) / min(R.x, R.y);
+  float distFromCenter = length(uv);
+  
+  // 1. Deep space backdrop with radial gradient fading to perfect void at edges
+  vec3 col = mix(vec3(0.001, 0.008, 0.003), vec3(0.0, 0.0, 0.0), smoothstep(0.1, 1.4, distFromCenter));
+  
+  // 2. Starfield Layer (Twinkling & slow drift)
+  float stars = 0.0;
+  for (int l = 0; l < 3; l++) {
+    float fl = float(l);
+    float gridScale = 10.0 + fl * 6.0;
+    vec2 st = uv * gridScale;
+    
+    // Slow coordinate drift
+    st += vec2(T * 0.008 * (1.0 + fl * 0.5), -T * 0.002 * (1.0 + fl * 0.2));
+    
+    vec2 ipos = floor(st);
+    vec2 fpos = fract(st);
+    
+    vec2 rand = hash22(ipos + fl * 57.89);
+    if (rand.x > 0.4) {
+      vec2 offset = rand;
+      float d = length(fpos - offset);
+      float twinkle = sin(T * (1.2 + rand.y * 1.8) + rand.x * 6.28) * 0.5 + 0.5;
+      float size = 0.006 + 0.005 * rand.y;
+      float star = smoothstep(size, 0.0, d);
+      float glow = 0.0003 / (d + 0.0025);
+      stars += (star + glow * 0.3) * twinkle * (0.3 + 0.7 * rand.y);
+    }
+  }
+  col += vec3(0.8, 0.95, 1.0) * stars * 0.75;
+  
+  // 3. Horizontal Shooting Stars / Comets with Cursor Attraction
+  vec2 mouseUV = vec2(0.0);
+  bool hasMouse = (pointerCount > 0);
+  if (hasMouse) {
+    mouseUV = (touch - 0.5 * R) / min(R.x, R.y);
+  }
+  
+  vec3 comets = vec3(0.0);
+  for (int i = 0; i < 4; i++) {
+    float fi = float(i);
+    float h1 = hash11(fi * 43.19 + 7.12);
+    float h2 = hash11(fi * 81.65 + 13.91);
+    float h3 = hash11(fi * 19.34 + 29.47);
+    
+    float speed = 0.3 + 0.2 * h1;
+    float phase = h2 * 12.0;
+    float cycle = fract(T * speed + phase);
+    
+    // Shooting direction: mostly horizontal with a slight random downwards tilt
+    vec2 dir = normalize(vec2(1.0, -0.05 - 0.1 * h3));
+    
+    // Path coordinates
+    float yStart = -0.65 + 1.3 * h3;
+    vec2 startPos = vec2(-1.8, yStart);
+    vec2 endPos = startPos + dir * 3.6;
+    
+    vec2 headPos = mix(startPos, endPos, cycle);
+    
+    // Cursor gravitational pull
+    if (hasMouse) {
+      float dMouse = length(headPos - mouseUV);
+      vec2 pull = (mouseUV - headPos) * (0.16 / (dMouse + 0.25));
+      headPos += pull;
+    }
+    
+    vec2 v = uv - headPos;
+    float proj = dot(v, -dir);
+    
+    // Tail length limit
+    if (proj >= 0.0 && proj < 0.8) {
+      float perp = length(v + proj * dir);
+      
+      // Smooth decay of comet tail
+      float tailFade = exp(-proj * 5.5) * smoothstep(0.8, 0.0, proj);
+      
+      // Tail glow and sharp head core
+      float tailGlow = 0.0016 / (perp + 0.0035) * tailFade;
+      float headGlow = 0.0012 / (length(v) + 0.006);
+      
+      // Dynamic color: Emerald blending into Teal/Cyan
+      vec3 cometCol = mix(vec3(0.02, 0.92, 0.45), vec3(0.0, 0.75, 0.85), h1);
+      comets += (tailGlow + headGlow) * cometCol * (0.5 + 0.5 * h2);
+    }
+  }
+  col += comets * 0.9;
+  
+  // 4. Emerald Neural Network Graph (Warped by cursor)
+  float scale = 12.0;
+  vec2 st = uv * scale;
+  vec2 ipos = floor(st);
+  vec2 fpos = fract(st);
+  
+  // Cache points in a 3x3 grid around the cell
+  vec2 points[9];
+  int idx = 0;
+  
+  for (int y = -1; y <= 1; y++) {
+    for (int x = -1; x <= 1; x++) {
+      vec2 g = vec2(float(x), float(y));
+      vec2 cell = ipos + g;
+      vec2 rand = hash22(cell);
+      
+      // Node idle animation
+      vec2 p = g + 0.5 + 0.3 * sin(T * 0.5 + rand * 6.2831);
+      
+      // Node position in grid space
+      vec2 nodeWorld = ipos + p;
+      
+      // Warp node coordinates towards cursor
+      if (hasMouse) {
+        vec2 mouseGrid = mouseUV * scale;
+        float d = length(nodeWorld - mouseGrid);
+        vec2 pull = (mouseGrid - nodeWorld) * (0.45 / (d + 0.7));
+        p += pull;
+      }
+      
+      points[idx++] = p;
+    }
+  }
+  
+  float m_dist = 1e10;
+  float line_glow = 0.0;
+  float node_dots = 0.0;
+  vec2 local_p = fpos;
+  
+  // Compute minimum distance and draw nodes
+  for (int i = 0; i < 9; i++) {
+    float d = length(local_p - points[i]);
+    m_dist = min(m_dist, d);
+    
+    // Smooth node dot with hot core
+    float dotGlow = 0.045 / (d + 0.018);
+    node_dots += dotGlow * 0.15;
+    if (d < 0.04) {
+      node_dots += smoothstep(0.04, 0.0, d) * 0.65;
+    }
+  }
+  
+  // Draw connections from the center point of the 3x3 block
+  vec2 p_center = points[4];
+  for (int i = 0; i < 9; i++) {
+    if (i == 4) continue;
+    float dist_between = length(p_center - points[i]);
+    
+    // Connect nodes that are within logical distance
+    float max_dist = 1.6;
+    if (dist_between < max_dist) {
+      float d_line = df_line(local_p, p_center, points[i]);
+      float fade = smoothstep(max_dist, 0.7, dist_between);
+      
+      // Animated signal pulses traveling along connection lines
+      vec2 pa = local_p - p_center;
+      vec2 ba = points[i] - p_center;
+      float proj = clamp(dot(pa, ba)/dot(ba, ba), 0.0, 1.0);
+      float pulse = fract(proj - T * 0.4);
+      float pulseGlow = smoothstep(0.15, 0.0, abs(pulse - 0.5)) * 0.6;
+      
+      float thickness = 0.007;
+      float lineVal = smoothstep(thickness + 0.015, thickness - 0.003, d_line);
+      line_glow += (lineVal * 0.1 + lineVal * pulseGlow) * fade;
+    }
+  }
+  
+  // Mix node graph colors
+  vec3 lineColor = mix(vec3(0.03, 0.65, 0.38), vec3(0.0, 0.55, 0.65), sin(T * 0.25) * 0.5 + 0.5) * line_glow;
+  vec3 nodeColor = mix(vec3(0.08, 0.9, 0.52), vec3(0.0, 0.8, 0.75), cos(T * 0.3) * 0.5 + 0.5) * node_dots;
+  
+  // Subtle moving flow field in the background matching coordinate space
+  float flow = sin(st.y * 3.0 - T * 1.0) * cos(st.x * 2.0 + T * 0.3);
+  vec3 flowBg = vec3(0.002, 0.05, 0.025) * max(0.0, flow) * (1.0 - distFromCenter * 0.6);
+  
+  col += lineColor * 0.85 + nodeColor * 0.9 + flowBg;
+  
+  // Soft vignetting towards screen corners
+  col *= smoothstep(1.5, 0.45, distFromCenter);
+  
+  fragColor = vec4(col, 1.0);
+}
+`;
 
 export default Hero;

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, Space_Grotesk } from "next/font/google";
+import { Archivo, JetBrains_Mono } from "next/font/google";
+import { CustomCursor } from "@/components/ui/custom-cursor";
+import { ScrollReset } from "@/components/ui/scroll-reset";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -8,7 +10,7 @@ const archivo = Archivo({
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const jetbrainsMono = JetBrains_Mono({
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
@@ -62,7 +64,32 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#020617",
+  themeColor: "#020804",
+};
+
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Mehedi Hasan",
+  "jobTitle": "AI Systems Engineer",
+  "url": "https://mehedi-hasan-portfolio.vercel.app",
+  "sameAs": [
+    "https://github.com/Rytnix786",
+    "https://www.linkedin.com/in/mehedi-hasan-llm"
+  ],
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Dhaka",
+    "addressCountry": "Bangladesh"
+  }
+};
+
+const webpageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Mehedi Hasan | AI Systems Engineer Portfolio",
+  "description": "Portfolio of Mehedi Hasan, an AI Systems Engineer building production RAG, multi-agent workflows, backend systems, and full-stack AI products.",
+  "url": "https://mehedi-hasan-portfolio.vercel.app"
 };
 
 export default function RootLayout({
@@ -71,8 +98,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${archivo.variable} ${spaceGrotesk.variable} scroll-smooth`} suppressHydrationWarning>
-      <body>{children}</body>
+    <html lang="en" className={`${archivo.variable} ${jetbrainsMono.variable} scroll-smooth`} suppressHydrationWarning>
+      <head>
+        {/* Synchronous scroll reset — must run before browser restores scroll position.
+            useEffect fires too late; this inline script runs during HTML parsing. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `history.scrollRestoration = 'manual'; window.scrollTo(0, 0);`,
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
+        />
+      </head>
+      <body>
+        <ScrollReset />
+        <CustomCursor />
+        {children}
+      </body>
     </html>
   );
 }
