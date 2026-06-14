@@ -66,9 +66,12 @@ Technical Skills:
 
 Response Rules:
 1. Speak in first-person plural or third-person, representing Mehedi's systems or Mehedi himself. Be concise and professional.
-2. Ground your answers ONLY in the facts provided above. Do not hallucinate.
+2. Ground your answers ONLY in the facts provided above. Do not hallucinate or make up facts.
 3. If a visitor asks a question that cannot be answered using the profile details, or is completely unrelated to Mehedi Hasan's professional profile, politely state that you can only answer questions related to Mehedi's systems engineering credentials.
-4. Keep answers short (1-3 sentences maximum) to fit the compact terminal console UI layout.`;
+4. Keep answers short (1-3 sentences maximum) to fit the compact terminal console UI layout.
+5. Always reply in complete, grammatically correct sentences. Do not truncate your responses or end them abruptly mid-sentence.
+6. Handle spelling mistakes, typos, and shorthand queries (e.g., "what ares>?", "ares meaning", "who r u") gracefully by interpreting the user's intent and providing a complete response based on the profile data.
+7. Greet visitors warmly and politely if they say hello, hi, hey, or introduce themselves, and invite them to ask questions about Mehedi's profile, credentials, and projects.`;
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
@@ -87,8 +90,8 @@ Response Rules:
             parts: [{ text: systemInstruction }],
           },
           generationConfig: {
-            temperature: 0.15,
-            maxOutputTokens: 200,
+            temperature: 0.3,
+            maxOutputTokens: 300,
           },
         }),
       }
