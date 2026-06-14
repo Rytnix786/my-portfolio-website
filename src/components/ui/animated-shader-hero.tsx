@@ -347,10 +347,10 @@ const Hero: React.FC<HeroProps> = ({
       />
       
       {/* Hero Content Overlay with Offset to prevent fixed navbar overlapping */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-white bg-slate-950/20 pt-24 pb-12">
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-white bg-slate-950/20 pt-24 pb-12 pointer-events-none">
 
 
-        <div className="text-center space-y-6 max-w-5xl mx-auto px-4">
+        <div className="text-center space-y-6 max-w-5xl mx-auto px-4 pointer-events-auto">
           {/* Main Heading with Animation (Cyan-to-Blue Gradients) */}
           <div className="space-y-3">
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-300 bg-clip-text text-transparent animate-fade-in-up animation-delay-200 tracking-tight">

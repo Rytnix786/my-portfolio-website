@@ -373,7 +373,7 @@ export const Component = () => {
   const project=PROJECTS[currentSection];
 
   return (
-    <div ref={outerRef} style={{height:`${PROJECTS.length*100}vh`}} className="relative">
+    <div id="projects" ref={outerRef} style={{height:`${PROJECTS.length*100}vh`}} className="relative">
       <div ref={stickyRef} className="sticky top-0 h-screen overflow-hidden">
 
         {/* WebGL Canvas */}
