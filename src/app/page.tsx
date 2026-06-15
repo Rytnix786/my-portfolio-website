@@ -5,7 +5,7 @@ import { Contact } from "@/components/sections/contact";
 import { CapabilitiesAccordion } from "@/components/sections/capabilities-accordion";
 import { Footer } from "@/components/sections/footer";
 import { InteractiveHero } from "@/components/sections/interactive-hero";
-import { Journey } from "@/components/sections/journey";
+import { InteractiveStory } from "@/components/sections/interactive-story";
 import { TechStack } from "@/components/sections/tech-stack";
 import { Projects } from "@/components/sections/projects";
 import { TerminalDemo } from "@/components/sections/terminal-demo";
@@ -23,7 +23,7 @@ export default function Home() {
         <CapabilitiesAccordion />
         <TerminalDemo />
         <TechStack />
-        <Journey />
+        <InteractiveStory />
         <Contact />
       </main>
       <Footer />

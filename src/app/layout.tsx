@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, JetBrains_Mono } from "next/font/google";
+import { Archivo, JetBrains_Mono, Sora } from "next/font/google";
 import { CustomCursor } from "@/components/ui/custom-cursor";
 import { ScrollReset } from "@/components/ui/scroll-reset";
 import "./globals.css";
@@ -13,6 +13,13 @@ const archivo = Archivo({
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const sora = Sora({
+  variable: "--font-sora",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -98,7 +105,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${archivo.variable} ${jetbrainsMono.variable} scroll-smooth`} suppressHydrationWarning>
+    <html lang="en" className={`${archivo.variable} ${jetbrainsMono.variable} ${sora.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
         {/* Synchronous scroll reset — must run before browser restores scroll position.
             useEffect fires too late; this inline script runs during HTML parsing. */}
@@ -116,7 +123,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(webpageSchema) }}
         />
       </head>
-      <body>
+      <body className="font-sora antialiased">
         <ScrollReset />
         <CustomCursor />
         {children}

@@ -1,31 +1,58 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
-import { ArrowDown, ArrowUpRight } from "lucide-react";
-import Hero from "@/components/ui/animated-shader-hero";
-import { profile, metrics } from "@/data/portfolio";
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
-// Animated Counter component
-function AnimatedCounter({ valueText }: { valueText: string }) {
-  const numVal = parseFloat(valueText);
-  const suffix = valueText.replace(/^[0-9.]+/, "");
-  const hasDecimals = valueText.includes(".");
-  
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, (latest) => {
-    if (hasDecimals) {
-      return latest.toFixed(2) + suffix;
-    }
-    return Math.floor(latest).toString() + suffix;
-  });
+// Lazy-load the Spline component as requested
+const Spline = React.lazy(() => import("@splinetool/react-spline"));
+
+// Typewriter Roles component
+function TypewriterRoles() {
+  const roles = [
+    "AI Systems Engineer",
+    "RAG Architect",
+    "Backend Systems Builder",
+    "Multi-Agent Orchestrator"
+  ];
+  const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
+  const [displayText, setDisplayText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [typingSpeed, setTypingSpeed] = useState(80);
 
   useEffect(() => {
-    const controls = animate(count, numVal, { duration: 2, ease: "easeOut" });
-    return () => controls.stop();
-  }, [count, numVal, hasDecimals]);
+    let timer: NodeJS.Timeout;
+    const activeRole = roles[currentRoleIndex];
 
-  return <motion.span>{rounded}</motion.span>;
+    if (isDeleting) {
+      setTypingSpeed(30);
+      timer = setTimeout(() => {
+        setDisplayText((prev) => prev.slice(0, -1));
+      }, typingSpeed);
+    } else {
+      setTypingSpeed(70);
+      timer = setTimeout(() => {
+        setDisplayText((prev) => activeRole.slice(0, prev.length + 1));
+      }, typingSpeed);
+    }
+
+    if (!isDeleting && displayText === activeRole) {
+      timer = setTimeout(() => setIsDeleting(true), 2500); // pause at the end
+    }
+
+    if (isDeleting && displayText === "") {
+      setIsDeleting(false);
+      setCurrentRoleIndex((prev) => (prev + 1) % roles.length);
+    }
+
+    return () => clearTimeout(timer);
+  }, [displayText, isDeleting, currentRoleIndex, typingSpeed]);
+
+  return (
+    <span className="text-primary font-mono inline-block font-semibold">
+      {displayText}
+      <span className="animate-pulse ml-1 inline-block w-1.5 h-4 bg-primary align-middle" />
+    </span>
+  );
 }
 
 // Magnetic Button component
@@ -49,7 +76,6 @@ function MagneticButton({
     const { left, top, width, height } = ref.current.getBoundingClientRect();
     const x = clientX - (left + width / 2);
     const y = clientY - (top + height / 2);
-    // Factor determines the magnetic pull strength
     const factor = 0.22;
     setPosition({ x: x * factor, y: y * factor });
   };
@@ -66,14 +92,14 @@ function MagneticButton({
       animate={{ x: position.x, y: position.y }}
       transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
       onClick={onClick}
-      className={`relative px-8 py-4 rounded-full font-semibold text-lg transition-colors overflow-hidden group ${
+      className={`relative px-6 py-3 md:px-8 md:py-4 rounded-sm font-semibold text-sm transition-all overflow-hidden group pointer-events-auto cursor-pointer ${
         primary
-          ? "bg-[#10b981] hover:bg-[#34d399] text-[#020804] shadow-[0_0_24px_rgba(16,185,129,0.3)] hover:shadow-[0_0_36px_rgba(16,185,129,0.55)]"
-          : "bg-[#020804]/60 hover:bg-[#10b981]/10 border border-[#10b981]/30 hover:border-[#10b981]/60 text-white backdrop-blur-sm"
+          ? "bg-primary text-primary-foreground hover:brightness-110 active:scale-[0.97]"
+          : "bg-white/5 border border-white/10 hover:bg-white/10 text-white active:scale-[0.97]"
       } ${className}`}
     >
-      {/* Glow highlight effect */}
-      <span className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      {/* Dynamic hover highlight ring */}
+      <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       <span className="flex items-center gap-2 justify-center relative z-10">
         {children}
       </span>
@@ -81,232 +107,174 @@ function MagneticButton({
   );
 }
 
-// Typewriter Roles component
-function TypewriterRoles() {
-  const roles = [
-    "AI Systems Engineer",
-    "RAG Architect",
-    "Backend Systems Builder",
-    "Multi-Agent Orchestrator"
-  ];
-  const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
-  const [displayText, setDisplayText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [typingSpeed, setTypingSpeed] = useState(80);
+export function InteractiveHero() {
+  const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const splineContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    const activeRole = roles[currentRoleIndex];
+    setMounted(true);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile, { passive: true });
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
-    if (isDeleting) {
-      // Deleting speed
-      setTypingSpeed(40);
-      timer = setTimeout(() => {
-        setDisplayText((prev) => prev.slice(0, -1));
-      }, typingSpeed);
-    } else {
-      // Typing speed
-      setTypingSpeed(80);
-      timer = setTimeout(() => {
-        setDisplayText((prev) => activeRole.slice(0, prev.length + 1));
-      }, typingSpeed);
-    }
+  // Intercept scroll/wheel events in capture phase to prevent Spline scroll hijacking
+  useEffect(() => {
+    const container = splineContainerRef.current;
+    if (!container || isMobile) return;
 
-    // Finished typing full word
-    if (!isDeleting && displayText === activeRole) {
-      timer = setTimeout(() => setIsDeleting(true), 2500); // pause at the end
-    }
+    const handleWheel = (e: WheelEvent) => {
+      // Prevent Spline from calling preventDefault() on wheel scroll
+      e.stopPropagation();
+    };
 
-    // Finished deleting word
-    if (isDeleting && displayText === "") {
-      setIsDeleting(false);
-      setCurrentRoleIndex((prev) => (prev + 1) % roles.length);
-    }
+    const handleTouchMove = (e: TouchEvent) => {
+      // Prevent Spline from calling preventDefault() on touch swiping
+      e.stopPropagation();
+    };
 
-    return () => clearTimeout(timer);
-  }, [displayText, isDeleting, currentRoleIndex, typingSpeed]);
+    container.addEventListener("wheel", handleWheel, { capture: true, passive: true });
+    container.addEventListener("touchmove", handleTouchMove, { capture: true, passive: true });
 
-  return (
-    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#10b981] via-[#34d399] to-[#6ee7b7] font-mono min-h-[1.5em] inline-block">
-      {displayText}
-      <span className="animate-pulse ml-1 inline-block w-1.5 h-6 bg-[#10b981] align-middle" />
-    </span>
-  );
-}
+    return () => {
+      container.removeEventListener("wheel", handleWheel, { capture: true });
+      container.removeEventListener("touchmove", handleTouchMove, { capture: true });
+    };
+  }, [mounted, isMobile]);
 
-export function InteractiveHero() {
-  const handleViewBuilds = () => {
+  const handleBookCall = () => {
+    window.open("https://mail.google.com/mail/?view=cm&fs=1&to=nafismehedi37@gmail.com", "_blank");
+  };
+
+  const handleScrollToWork = () => {
     const el = document.getElementById("projects");
     if (el) {
       el.scrollIntoView({ behavior: "smooth" });
     }
   };
 
-  const handleContactMe = () => {
-    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${profile.email}`, "_blank");
-  };
+  const nameLetters = Array.from("Mehedi Hasan");
+  const descriptionText = "Production-minded AI systems built in days. Multi-agent orchestration deployed with zero-trust architecture. Grounded RAG pipelines set up for your entire enterprise. All of it done right, not just fast.";
+  const descriptionWords = descriptionText.split(" ");
 
-  // Split name for staggered entrance
-  const nameLetters = Array.from(profile.name);
-  
-  // Split headline for blur-to-clear reveal
-  const headlineWords = profile.headline.split(" ");
-
-  // Framer Motion variants
   const containerVariants = {
     hidden: {},
     visible: {
       transition: {
-        staggerChildren: 0.05,
+        staggerChildren: 0.03,
       },
     },
   };
 
   const nameLetterVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 24, filter: "blur(4px)" },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { type: "spring" as const, stiffness: 200, damping: 12 },
-    },
-  };
-
-  const wordVariants = {
-    hidden: { opacity: 0, filter: "blur(8px)", y: 15 },
-    visible: {
-      opacity: 1,
       filter: "blur(0px)",
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" as const },
+      transition: { type: "spring" as const, stiffness: 200, damping: 14 },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, filter: "blur(4px)", y: 12 },
     visible: {
       opacity: 1,
+      filter: "blur(0px)",
       y: 0,
-      transition: { duration: 0.8, ease: "easeOut" as const },
+      transition: { duration: 0.55, ease: "easeOut" as const },
     },
   };
 
   return (
-    <Hero className="relative">
-      {/* Background grain texture */}
-      <div className="absolute inset-0 noise-overlay pointer-events-none opacity-[0.03]" />
-      
-      {/* Gradient border glows */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#10b981]/25 to-transparent" />
-      
-      <div className="absolute inset-0 flex flex-col justify-center items-center px-4 pt-24 pb-16">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="w-full max-w-5xl mx-auto flex flex-col items-center text-center space-y-8 pointer-events-auto"
-        >
-          {/* Top trust badge */}
-          <motion.div
-            variants={itemVariants}
-            className="px-4 py-1.5 rounded-full border border-[#10b981]/20 bg-[#020804]/50 backdrop-blur-md text-xs font-mono text-[#34d399] tracking-wider flex items-center gap-2 select-none"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10b981] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10b981]"></span>
-            </span>
-            {profile.role.toUpperCase()} · {profile.location.toUpperCase()}
-          </motion.div>
-
-          {/* Name Reveal */}
-          <div className="overflow-hidden">
-            <h1 className="text-6xl sm:text-8xl md:text-9xl font-extrabold tracking-tighter text-white select-none">
-              {nameLetters.map((char, index) => (
-                <motion.span
-                  key={index}
-                  variants={nameLetterVariants}
-                  className="inline-block whitespace-pre"
-                >
-                  {char}
-                </motion.span>
-              ))}
-            </h1>
+    <section id="top" className="relative min-h-screen flex items-end bg-hero-bg overflow-hidden">
+      {/* Spline 3D Background */}
+      <div ref={splineContainerRef} className="absolute inset-0 pointer-events-auto">
+        {mounted && !isMobile && (
+          <Suspense fallback={<div className="absolute inset-0 bg-hero-bg animate-pulse" />}>
+            <Spline
+              scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
+              className="w-full h-full"
+            />
+          </Suspense>
+        )}
+        {(isMobile || !mounted) && (
+          <div className="absolute inset-0 bg-hero-bg">
+            {/* A beautiful mobile fallback: dynamic pulsing green radial glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(16,185,129,0.14),transparent_60%)] animate-pulse" style={{ animationDuration: "8s" }} />
           </div>
-
-          {/* Role Cycler */}
-          <motion.div variants={itemVariants} className="text-xl sm:text-3xl font-medium min-h-[2.5rem]">
-            <TypewriterRoles />
-          </motion.div>
-
-          {/* Headline (Blur-to-Clear staggered word-by-word) */}
-          <motion.p
-            variants={containerVariants}
-            className="text-lg sm:text-2xl text-slate-300 font-light max-w-3xl leading-relaxed select-none"
-          >
-            {headlineWords.map((word, index) => (
-              <motion.span
-                key={index}
-                variants={wordVariants}
-                className="inline-block mr-[0.3em]"
-              >
-                {word}
-              </motion.span>
-            ))}
-          </motion.p>
-
-          {/* CTA Buttons */}
-          <motion.div
-            variants={itemVariants}
-            className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-center justify-center pt-4"
-          >
-            <MagneticButton primary onClick={handleViewBuilds}>
-              View Case Studies
-              <ArrowDown size={18} />
-            </MagneticButton>
-            
-            <MagneticButton onClick={handleContactMe}>
-              Let's Build
-              <ArrowUpRight size={18} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </MagneticButton>
-          </motion.div>
-
-          {/* Metrics bar */}
-          <motion.div
-            variants={itemVariants}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12 pt-12 mt-4 w-full max-w-4xl border-t border-white/5 select-none"
-          >
-            {metrics.map((metric, idx) => (
-              <div key={idx} className="flex flex-col items-center md:items-start text-center md:text-left space-y-1">
-                <span className="text-3xl sm:text-4xl font-bold font-mono tracking-tight text-[#10b981]">
-                  <AnimatedCounter valueText={metric.value} />
-                </span>
-                <span className="text-xs sm:text-sm text-slate-400 font-light tracking-wide uppercase font-mono">
-                  {metric.label}
-                </span>
-              </div>
-            ))}
-          </motion.div>
-        </motion.div>
-        
-        {/* Animated Scroll Indicator at the bottom */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2.2, duration: 1 }}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 select-none pointer-events-auto cursor-pointer"
-          onClick={handleViewBuilds}
-        >
-          <span className="text-[10px] uppercase font-mono tracking-widest text-[#10b981]/60">Explore</span>
-          <div className="relative flex items-center justify-center w-8 h-8 rounded-full border border-[#10b981]/25 bg-[#020804]/80 backdrop-blur-md">
-            <span className="absolute inset-0 rounded-full border border-[#10b981]/40 animate-ping opacity-25" style={{ animationDuration: "3s" }} />
-            <motion.div
-              animate={{ y: [0, 4, 0] }}
-              transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-            >
-              <ArrowDown size={14} className="text-[#10b981]" />
-            </motion.div>
-          </div>
-        </motion.div>
+        )}
       </div>
-    </Hero>
+
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/30 z-[1] pointer-events-none" />
+
+      {/* Content container */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 pointer-events-none w-full max-w-[90%] sm:max-w-md lg:max-w-3xl px-6 md:px-10 pb-16 pt-32 text-left"
+      >
+        {/* Staggered Name Characters */}
+        <h1 className="text-[clamp(2.5rem,7.5vw,5.5rem)] font-bold leading-[1.05] tracking-[-0.05em] text-white mb-2 md:mb-4 uppercase select-none">
+          {nameLetters.map((char, index) => (
+            <motion.span
+              key={index}
+              variants={nameLetterVariants}
+              className="inline-block whitespace-pre"
+            >
+              {char}
+            </motion.span>
+          ))}
+        </h1>
+
+        {/* Typewriter role cycler */}
+        <motion.div
+          variants={itemVariants}
+          className="text-foreground/85 text-[clamp(1rem,2.2vw,1.6rem)] font-light mb-3 md:mb-6 min-h-[1.5em]"
+        >
+          I am a <TypewriterRoles />
+        </motion.div>
+
+        {/* Word-by-word reveal description */}
+        <p className="text-slate-300/90 text-[clamp(0.85rem,1.4vw,1.15rem)] font-light mb-6 md:mb-8 max-w-2xl leading-relaxed select-none">
+          {descriptionWords.map((word, index) => (
+            <motion.span
+              key={index}
+              variants={itemVariants}
+              className="inline-block mr-[0.3em]"
+            >
+              {word}
+            </motion.span>
+          ))}
+        </p>
+
+        {/* Tactile Magnetic Buttons */}
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-wrap gap-4 pt-2"
+        >
+          <MagneticButton primary onClick={handleBookCall}>
+            Book a Call
+          </MagneticButton>
+          <MagneticButton onClick={handleScrollToWork}>
+            My Work
+          </MagneticButton>
+        </motion.div>
+
+        {/* System metrics tagline */}
+        <motion.p
+          variants={itemVariants}
+          className="text-muted-foreground/60 text-xs font-light mt-8 font-mono"
+        >
+          AI Systems Engineer · Dhaka, Bangladesh · 122+ backend tests maintained
+        </motion.p>
+      </motion.div>
+    </section>
   );
 }

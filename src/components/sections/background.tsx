@@ -32,7 +32,7 @@ export function Background() {
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-slate-950">
       {/* Dynamic Cursor Glow (Only on desktop/hoverable screens) */}
       <motion.div
-        className="absolute pointer-events-none rounded-full w-[400px] h-[400px] bg-cyan-500/[0.08] blur-[90px] hidden md:block mix-blend-screen"
+        className="absolute pointer-events-none rounded-full w-[400px] h-[400px] bg-[#10b981]/[0.08] blur-[90px] hidden md:block mix-blend-screen"
         style={{
           x: glowX,
           y: glowY,
@@ -40,7 +40,7 @@ export function Background() {
       />
 
       {/* Static Ambient Base Gradients (Providing rich background depth and mobile fallback) */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_12%,rgba(34,211,238,0.14),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(59,130,246,0.14),transparent_26%),radial-gradient(circle_at_50%_92%,rgba(20,184,166,0.11),transparent_34%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_12%,rgba(16,185,129,0.14),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(52,211,153,0.12),transparent_26%),radial-gradient(circle_at_50%_92%,rgba(16,185,129,0.08),transparent_34%)]" />
       
       {/* Futuristic Grid Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] bg-[size:80px_80px] opacity-[0.12]" />
@@ -49,7 +49,7 @@ export function Background() {
       <div className="noise-overlay absolute inset-0 opacity-[0.05]" />
       
       {/* Central Soft Blur Glow */}
-      <div className="absolute left-1/2 top-0 h-[40rem] w-[40rem] -translate-x-1/2 rounded-full bg-cyan-400/[0.07] blur-3xl" />
+      <div className="absolute left-1/2 top-0 h-[40rem] w-[40rem] -translate-x-1/2 rounded-full bg-emerald-500/[0.07] blur-3xl" />
     </div>
   );
 }
