@@ -1,42 +1,49 @@
 "use client";
 
-import { useEffect } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { useEffect, useRef } from "react";
 
 export function Background() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  // Configure smooth spring movement for the background glow dot
-  const springConfig = { damping: 30, stiffness: 200, mass: 0.8 };
-  const glowX = useSpring(mouseX, springConfig);
-  const glowY = useSpring(mouseY, springConfig);
+  const glowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Only track mouse if window is available
-    if (typeof window === "undefined") return;
+    const glow = glowRef.current;
+    if (!glow || window.matchMedia("(pointer: coarse)").matches) return;
+
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let frameId = 0;
+    let running = true;
 
     const handleMouseMove = (e: MouseEvent) => {
-      // Center the 400px radial glow circle at the mouse cursor
-      mouseX.set(e.clientX - 200);
-      mouseY.set(e.clientY - 200);
+      targetX = e.clientX - 200;
+      targetY = e.clientY - 200;
+    };
+
+    const updateGlow = () => {
+      currentX += (targetX - currentX) * 0.18;
+      currentY += (targetY - currentY) * 0.18;
+      glow.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+      if (running) frameId = requestAnimationFrame(updateGlow);
     };
 
     window.addEventListener("mousemove", handleMouseMove);
+    frameId = requestAnimationFrame(updateGlow);
+
     return () => {
+      running = false;
       window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(frameId);
     };
-  }, [mouseX, mouseY]);
+  }, []);
 
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-slate-950">
       {/* Dynamic Cursor Glow (Only on desktop/hoverable screens) */}
-      <motion.div
+      <div
+        ref={glowRef}
         className="absolute pointer-events-none rounded-full w-[400px] h-[400px] bg-[#10b981]/[0.08] blur-[90px] hidden md:block mix-blend-screen"
-        style={{
-          x: glowX,
-          y: glowY,
-        }}
       />
 
       {/* Static Ambient Base Gradients (Providing rich background depth and mobile fallback) */}

@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Terminal, Cpu, Database, Activity, HardDrive, Compass, Award, Calendar } from "lucide-react";
+import { Terminal, Cpu, Compass, Award } from "lucide-react";
 
 interface StoryNode {
   id: string;
@@ -26,7 +25,7 @@ interface Milestone {
 }
 
 export function InteractiveStory() {
-  const milestones: Milestone[] = [
+  const milestones = React.useMemo<Milestone[]>(() => [
     {
       id: "brac",
       date: "2022 - 2026",
@@ -177,25 +176,26 @@ export function InteractiveStory() {
         { from: "now-3", to: "now-1", path: "M 150 190 L 60 80" }
       ]
     }
-  ];
+  ], []);
 
   const [activeTab, setActiveTab] = useState<string>("builder");
   const activeMilestone = milestones.find((m) => m.id === activeTab) || milestones[1];
+  const defaultNodeId = activeMilestone.nodes[0].id;
 
-  const [selectedNodeId, setSelectedNodeId] = useState<string>(activeMilestone.nodes[0].id);
+  const [selectedNodeId, setSelectedNodeId] = useState<string>(defaultNodeId);
   const activeNode = activeMilestone.nodes.find((n) => n.id === selectedNodeId) || activeMilestone.nodes[0];
 
   const [terminalText, setTerminalText] = useState<string>("");
 
   // Update selected node when active tab changes
   useEffect(() => {
-    setSelectedNodeId(activeMilestone.nodes[0].id);
-  }, [activeTab]);
+    const timer = globalThis.setTimeout(() => setSelectedNodeId(defaultNodeId), 0);
+    return () => globalThis.clearTimeout(timer);
+  }, [defaultNodeId]);
 
   // Clean typewriter log effect (using slice() to prevent garbled accumulation)
   useEffect(() => {
     let active = true;
-    setTerminalText("");
     const targetText = activeNode.typewriterText;
     let i = 0;
 
@@ -239,7 +239,7 @@ export function InteractiveStory() {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [milestones]);
 
   const getMilestoneIcon = (id: string) => {
     switch (id) {
@@ -332,7 +332,7 @@ export function InteractiveStory() {
                         Core Wording & Learnings
                       </span>
                       <p className="text-xs text-slate-400 leading-relaxed italic font-light">
-                        "{m.humanStory}"
+                        &quot;{m.humanStory}&quot;
                       </p>
                     </div>
 

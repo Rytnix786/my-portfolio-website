@@ -83,7 +83,7 @@ export function About() {
               {/* CV Download CTA */}
               <div className="flex flex-wrap gap-4 pt-4 border-t border-white/5 items-center justify-between">
                 <p className="text-xs font-mono text-slate-500">
-                  // currently open to internships & engineering roles
+                  {"// currently open to internships & engineering roles"}
                 </p>
                 <a
                   href={profile.resume}
@@ -187,7 +187,7 @@ export function About() {
               </div>
 
               <div className="text-[10px] font-mono text-slate-500 pt-6">
-                // optimized for low-latency streaming runtimes
+                {"// optimized for low-latency streaming runtimes"}
               </div>
             </div>
           </Reveal>

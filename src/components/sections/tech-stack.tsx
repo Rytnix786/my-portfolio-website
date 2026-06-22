@@ -43,7 +43,8 @@ export function TechStack() {
               className="rounded-[2rem] border border-white/5 bg-[#020c06]/35 p-6 backdrop-blur-md transition-all duration-300 hover:border-[#10b981]/30 hover:bg-[#020f08]/50"
             >
               <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-[#34d399] mb-4">
-                // {group.title}
+                {"// "}
+                {group.title}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {group.skills.map((skill) => (

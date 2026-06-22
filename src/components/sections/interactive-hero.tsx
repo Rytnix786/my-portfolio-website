@@ -1,38 +1,39 @@
 "use client";
 
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
-// Lazy-load the Spline component as requested
-const Spline = React.lazy(() => import("@splinetool/react-spline"));
+const Spline = dynamic(() => import("@splinetool/react-spline"), {
+  ssr: false,
+  loading: () => <div className="absolute inset-0 bg-hero-bg animate-pulse" />,
+});
+
+const roles = [
+  "AI Systems Engineer",
+  "RAG Architect",
+  "Backend Systems Builder",
+  "Multi-Agent Orchestrator",
+];
 
 // Typewriter Roles component
 function TypewriterRoles() {
-  const roles = [
-    "AI Systems Engineer",
-    "RAG Architect",
-    "Backend Systems Builder",
-    "Multi-Agent Orchestrator"
-  ];
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [typingSpeed, setTypingSpeed] = useState(80);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
     const activeRole = roles[currentRoleIndex];
 
     if (isDeleting) {
-      setTypingSpeed(30);
       timer = setTimeout(() => {
         setDisplayText((prev) => prev.slice(0, -1));
-      }, typingSpeed);
+      }, 30);
     } else {
-      setTypingSpeed(70);
       timer = setTimeout(() => {
         setDisplayText((prev) => activeRole.slice(0, prev.length + 1));
-      }, typingSpeed);
+      }, 70);
     }
 
     if (!isDeleting && displayText === activeRole) {
@@ -40,12 +41,14 @@ function TypewriterRoles() {
     }
 
     if (isDeleting && displayText === "") {
-      setIsDeleting(false);
-      setCurrentRoleIndex((prev) => (prev + 1) % roles.length);
+      timer = setTimeout(() => {
+        setIsDeleting(false);
+        setCurrentRoleIndex((prev) => (prev + 1) % roles.length);
+      }, 0);
     }
 
     return () => clearTimeout(timer);
-  }, [displayText, isDeleting, currentRoleIndex, typingSpeed]);
+  }, [displayText, isDeleting, currentRoleIndex]);
 
   return (
     <span className="text-primary font-mono inline-block font-semibold">
@@ -110,17 +113,39 @@ function MagneticButton({
 export function InteractiveHero() {
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [shouldLoadSpline, setShouldLoadSpline] = useState(false);
   const splineContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMounted(true);
+    const mountTimer = globalThis.setTimeout(() => setMounted(true), 0);
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
     checkMobile();
     window.addEventListener("resize", checkMobile, { passive: true });
-    return () => window.removeEventListener("resize", checkMobile);
+    return () => {
+      globalThis.clearTimeout(mountTimer);
+      window.removeEventListener("resize", checkMobile);
+    };
   }, []);
+
+  useEffect(() => {
+    if (!mounted || isMobile) {
+      return;
+    }
+
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const animationId = window.requestAnimationFrame(() => {
+      timeoutId = globalThis.setTimeout(() => setShouldLoadSpline(true), 250);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(animationId);
+      if (timeoutId !== undefined) {
+        globalThis.clearTimeout(timeoutId);
+      }
+    };
+  }, [mounted, isMobile]);
 
   // Intercept scroll/wheel events in capture phase to prevent Spline scroll hijacking
   useEffect(() => {
@@ -194,15 +219,13 @@ export function InteractiveHero() {
     <section id="top" className="relative min-h-screen flex items-end bg-hero-bg overflow-hidden">
       {/* Spline 3D Background */}
       <div ref={splineContainerRef} className="absolute inset-0 pointer-events-auto">
-        {mounted && !isMobile && (
-          <Suspense fallback={<div className="absolute inset-0 bg-hero-bg animate-pulse" />}>
-            <Spline
-              scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
-              className="w-full h-full"
-            />
-          </Suspense>
+        {shouldLoadSpline && (
+          <Spline
+            scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
+            className="w-full h-full"
+          />
         )}
-        {(isMobile || !mounted) && (
+        {(isMobile || !mounted || !shouldLoadSpline) && (
           <div className="absolute inset-0 bg-hero-bg">
             {/* A beautiful mobile fallback: dynamic pulsing green radial glow */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(16,185,129,0.14),transparent_60%)] animate-pulse" style={{ animationDuration: "8s" }} />

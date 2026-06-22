@@ -6,7 +6,6 @@ export function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [isHidden, setIsHidden] = useState(true);
 
   useEffect(() => {
     // Only run on client and non-touch devices
@@ -21,6 +20,10 @@ export function CustomCursor() {
     let mouseY = 0;
     let ringX = 0;
     let ringY = 0;
+    let isHidden = true;
+    let isRunning = true;
+    let animationFrame = 0;
+    const trackedElements = new Set<Element>();
 
     const onMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
@@ -30,14 +33,14 @@ export function CustomCursor() {
       dot.style.top = `${mouseY}px`;
       
       if (isHidden) {
-        setIsHidden(false);
+        isHidden = false;
         dot.style.opacity = "1";
         ring.style.opacity = "1";
       }
     };
 
     const onMouseLeave = () => {
-      setIsHidden(true);
+      isHidden = true;
       dot.style.opacity = "0";
       ring.style.opacity = "0";
     };
@@ -50,7 +53,9 @@ export function CustomCursor() {
       ring.style.left = `${ringX}px`;
       ring.style.top = `${ringY}px`;
 
-      requestAnimationFrame(updateRing);
+      if (isRunning) {
+        animationFrame = requestAnimationFrame(updateRing);
+      }
     };
 
     const handleHoverStart = () => setIsHovered(true);
@@ -61,6 +66,8 @@ export function CustomCursor() {
         "a, button, [role='button'], input, select, textarea, .interactive-item"
       );
       interactiveElements.forEach((el) => {
+        if (trackedElements.has(el)) return;
+        trackedElements.add(el);
         el.addEventListener("mouseenter", handleHoverStart);
         el.addEventListener("mouseleave", handleHoverEnd);
       });
@@ -70,7 +77,7 @@ export function CustomCursor() {
     document.addEventListener("mouseleave", onMouseLeave);
     
     addHoverListeners();
-    const animationFrame = requestAnimationFrame(updateRing);
+    animationFrame = requestAnimationFrame(updateRing);
 
     // Watch for dynamic elements
     const observer = new MutationObserver(() => {
@@ -80,20 +87,18 @@ export function CustomCursor() {
     observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
+      isRunning = false;
       window.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseleave", onMouseLeave);
       cancelAnimationFrame(animationFrame);
       observer.disconnect();
       
-      const interactiveElements = document.querySelectorAll(
-        "a, button, [role='button'], input, select, textarea, .interactive-item"
-      );
-      interactiveElements.forEach((el) => {
+      trackedElements.forEach((el) => {
         el.removeEventListener("mouseenter", handleHoverStart);
         el.removeEventListener("mouseleave", handleHoverEnd);
       });
     };
-  }, [isHidden]);
+  }, []);
 
   return (
     <>

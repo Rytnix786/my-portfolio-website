@@ -5,7 +5,7 @@ export const profile = {
   email: "nafismehedi37@gmail.com",
   github: "https://github.com/Rytnix786",
   linkedin: "https://www.linkedin.com/in/mehedi-hasan-llm",
-  resume: "/assets/mehedi-hasan-cv.docx",
+  resume: "/assets/Mehedi_Hasan_Resume_Main.docx",
   portrait: "/assets/mehedi-hasan-profile.jpg",
   headline:
     "I build AI systems that stay useful when the demo ends and reality starts.",

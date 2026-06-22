@@ -1,17 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, JetBrains_Mono, Sora } from "next/font/google";
+import { Archivo, Sora } from "next/font/google";
 import { CustomCursor } from "@/components/ui/custom-cursor";
 import { ScrollReset } from "@/components/ui/scroll-reset";
 import "./globals.css";
 
 const archivo = Archivo({
   variable: "--font-display",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
 });
@@ -23,12 +17,13 @@ const sora = Sora({
   display: "swap",
 });
 
+const siteUrl = "https://mehedi-hasan-llm.vercel.app";
 const title = "Mehedi Hasan | AI Systems Engineer";
 const description =
   "Portfolio of Mehedi Hasan, an AI Systems Engineer building production RAG, multi-agent workflows, backend systems, and full-stack AI products.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://mehedi-hasan-portfolio.vercel.app"),
+  metadataBase: new URL(siteUrl),
   title,
   description,
   authors: [{ name: "Mehedi Hasan" }],
@@ -79,7 +74,7 @@ const personSchema = {
   "@type": "Person",
   "name": "Mehedi Hasan",
   "jobTitle": "AI Systems Engineer",
-  "url": "https://mehedi-hasan-portfolio.vercel.app",
+  "url": siteUrl,
   "sameAs": [
     "https://github.com/Rytnix786",
     "https://www.linkedin.com/in/mehedi-hasan-llm"
@@ -96,7 +91,7 @@ const webpageSchema = {
   "@type": "WebPage",
   "name": "Mehedi Hasan | AI Systems Engineer Portfolio",
   "description": "Portfolio of Mehedi Hasan, an AI Systems Engineer building production RAG, multi-agent workflows, backend systems, and full-stack AI products.",
-  "url": "https://mehedi-hasan-portfolio.vercel.app"
+  "url": siteUrl
 };
 
 export default function RootLayout({
@@ -105,7 +100,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${archivo.variable} ${jetbrainsMono.variable} ${sora.variable} scroll-smooth`} suppressHydrationWarning>
+    <html lang="en" className={`${archivo.variable} ${sora.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
         {/* Synchronous scroll reset — must run before browser restores scroll position.
             useEffect fires too late; this inline script runs during HTML parsing. */}

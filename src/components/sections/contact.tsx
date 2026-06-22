@@ -26,7 +26,7 @@ export function Contact() {
                 </div>
 
                 <h2 className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-                  Let's build something grounded.
+                  Let&apos;s build something grounded.
                 </h2>
                 
                 <p className="max-w-2xl text-base leading-relaxed text-slate-300 font-light sm:text-lg">

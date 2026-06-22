@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Terminal as TerminalIcon, Play, SquareTerminal, RefreshCw, CheckCircle2 } from "lucide-react";
-import { motion } from "framer-motion";
 import { SectionHeading } from "@/components/ui/section-heading";
 
 interface TerminalLine {
@@ -164,7 +163,7 @@ export function TerminalDemo() {
           });
           await new Promise((resolve) => setTimeout(resolve, 45));
         }
-      } catch (err) {
+      } catch {
         setHistory((prev) => [
           ...prev,
           { text: "Error: Unable to resolve AI systems query. Connection offline.", type: "error" },

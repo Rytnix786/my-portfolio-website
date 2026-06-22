@@ -21,7 +21,7 @@ Mehedi Hasan's Profile:
 - Contact Email: nafismehedi37@gmail.com
 - GitHub: https://github.com/Rytnix786
 - LinkedIn: https://www.linkedin.com/in/mehedi-hasan-llm
-- Resume: /assets/mehedi-hasan-cv.docx
+- Resume: /assets/Mehedi_Hasan_Resume_Main.docx
 - Headline: "I build AI systems that stay useful when the demo ends and reality starts."
 - Core philosophy: Grounded RAG, strict schema validation, refusal calibration, deterministic error paths, and extensive integration testing.
 - Additional strength: Ships production mobile apps (React Native / Expo / SQLite) for offline-first use in low-connectivity environments.
@@ -106,8 +106,9 @@ Response Rules:
     const data = await response.json();
     const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Refused to respond or empty response.";
     return NextResponse.json({ text: replyText.trim() });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("API route error:", error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

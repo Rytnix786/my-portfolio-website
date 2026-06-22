@@ -3,8 +3,7 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { motion } from "framer-motion";
-import { ArrowLeft, Cpu, ShieldAlert, BookOpen, Layers, Terminal, Sparkles } from "lucide-react";
+import { ArrowLeft, Cpu, BookOpen, Layers, Terminal, Sparkles } from "lucide-react";
 import { projects } from "@/data/portfolio";
 
 interface PageProps {

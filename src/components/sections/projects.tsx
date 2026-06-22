@@ -2,9 +2,8 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, BookOpen, Cpu, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
-import { Stagger, staggerItem } from "@/components/motion/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { projects } from "@/data/portfolio";
 

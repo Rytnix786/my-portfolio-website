@@ -64,7 +64,6 @@ export const Component = () => {
   const cardRef   = useRef<HTMLDivElement>(null);
 
   const smoothCameraPos = useRef({ x:0, y:30, z:100 });
-  const cameraVelocity  = useRef({ x:0, y:0, z:0 });
 
   const [scrollProgress, setScrollProgress] = useState(0);
   const [currentSection, setCurrentSection] = useState(0);
@@ -271,7 +270,7 @@ export const Component = () => {
       refs.composer?.render();
     };
     animate();
-    setIsReady(true);
+    const readyTimer = globalThis.setTimeout(() => setIsReady(true), 0);
 
     const onResize=()=>{
       if(!refs.camera||!refs.renderer||!refs.composer) return;
@@ -283,6 +282,7 @@ export const Component = () => {
     window.addEventListener('resize',onResize);
 
     return ()=>{
+      globalThis.clearTimeout(readyTimer);
       window.removeEventListener('resize',onResize);
       if(refs.animationId) cancelAnimationFrame(refs.animationId);
       refs.stars.forEach(s=>{s.geometry.dispose();(s.material as THREE.Material).dispose();});
@@ -316,7 +316,6 @@ export const Component = () => {
     const handleScroll=()=>{
       if(!outerRef.current) return;
       const rect=outerRef.current.getBoundingClientRect();
-      const scrollY=window.scrollY;
       const scrolled=-rect.top;
       const maxScroll=rect.height-window.innerHeight;
       const progress=Math.max(0,Math.min(scrolled/maxScroll,1));
