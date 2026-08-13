@@ -7,13 +7,17 @@ import { motion } from "framer-motion";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { projects } from "@/data/portfolio";
 
+import { ProjectDrawer } from "@/components/ui/project-drawer";
+
 // Reusable 3D Tilt Card component
 function ProjectCard({
   project,
   isFeatured = false,
+  onOpenDrawer,
 }: {
   project: (typeof projects)[number];
   isFeatured?: boolean;
+  onOpenDrawer: (p: (typeof projects)[number]) => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
@@ -84,7 +88,7 @@ function ProjectCard({
               )}
             </div>
             
-            <h3 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-white group-hover:text-[#34d399] transition-colors">
+            <h3 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-white group-hover:text-[#34d399] transition-colors cursor-pointer" onClick={() => onOpenDrawer(project)}>
               {project.name}
             </h3>
             
@@ -117,7 +121,7 @@ function ProjectCard({
 
           {/* Featured Visual Pipeline Overlay */}
           {isFeatured && (
-            <div className="lg:col-span-2 hidden lg:block border border-white/5 bg-[#020704]/40 rounded-2xl p-4 relative h-64 overflow-hidden select-none">
+            <div className="lg:col-span-2 hidden lg:block border border-white/5 bg-[#020704]/40 rounded-2xl p-4 relative h-64 overflow-hidden select-none cursor-pointer" onClick={() => onOpenDrawer(project)}>
               <span className="absolute top-3 left-4 text-[9px] font-mono text-slate-500 uppercase tracking-widest">
                 Agent flow_graph
               </span>
@@ -162,20 +166,27 @@ function ProjectCard({
         </div>
 
         {/* CTA Actions */}
-        <div className="flex flex-wrap gap-3 pt-4 border-t border-white/5" style={{ transform: "translateZ(10px)" }}>
+        <div className="flex flex-wrap gap-2.5 pt-4 border-t border-white/5" style={{ transform: "translateZ(10px)" }}>
           <Link
             href={`/work/${project.slug}`}
-            className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#10b981] hover:bg-[#34d399] px-5 text-xs font-semibold text-[#020804] transition-colors"
+            className="inline-flex min-h-10 items-center gap-2 rounded-full bg-[#10b981] hover:bg-[#34d399] px-5 text-xs font-semibold text-[#020804] transition-colors cursor-pointer"
           >
             Read Case Study
             <ArrowRight size={14} />
           </Link>
+
+          <button
+            onClick={() => onOpenDrawer(project)}
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 px-4 text-xs font-mono text-slate-300 transition-colors cursor-pointer"
+          >
+            Quick Preview
+          </button>
           
           <a
             href={project.href}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 px-4 text-xs font-mono text-slate-300 transition-colors"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-white/10 hover:border-white/20 bg-white/5 px-4 text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors"
           >
             Repo
             <ArrowUpRight size={12} />
@@ -186,7 +197,7 @@ function ProjectCard({
               href={project.docs}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/10 hover:border-white/20 px-4 text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors"
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-white/10 hover:border-white/20 px-4 text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors"
             >
               Docs
               <BookOpen size={12} />
@@ -199,9 +210,9 @@ function ProjectCard({
 }
 
 export function Projects() {
-  // We place the first project (Nexus Researcher) as featured, and render the rest in a grid.
   const featuredProject = projects[0];
   const gridProjects = projects.slice(1);
+  const [selectedProject, setSelectedProject] = useState<(typeof projects)[number] | null>(null);
 
   return (
     <section id="projects" className="px-4 py-24 sm:px-6 lg:px-8 bg-[#020804] relative">
@@ -217,15 +228,22 @@ export function Projects() {
         <div className="mt-12 space-y-6">
           {/* Featured Full Width */}
           <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-            <ProjectCard project={featuredProject} isFeatured={true} />
+            <ProjectCard project={featuredProject} isFeatured={true} onOpenDrawer={setSelectedProject} />
             
             {/* Remainder Grid */}
             {gridProjects.map((project) => (
-              <ProjectCard key={project.slug} project={project} isFeatured={false} />
+              <ProjectCard key={project.slug} project={project} isFeatured={false} onOpenDrawer={setSelectedProject} />
             ))}
           </div>
         </div>
       </div>
+
+      {/* Slide-over Case Study Drawer */}
+      <ProjectDrawer
+        project={selectedProject}
+        isOpen={!!selectedProject}
+        onClose={() => setSelectedProject(null)}
+      />
     </section>
   );
 }

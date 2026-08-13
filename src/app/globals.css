@@ -221,3 +221,15 @@ button {
   animation-delay: 0.8s;
 }
 
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.animate-flow-dash {
+  stroke-dasharray: 6 12;
+  animation: flow-dash 1.2s linear infinite;
+  will-change: stroke-dashoffset;
+}
+

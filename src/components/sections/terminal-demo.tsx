@@ -1,8 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Terminal as TerminalIcon, Play, SquareTerminal, RefreshCw, CheckCircle2 } from "lucide-react";
+import {
+  Terminal as TerminalIcon,
+  Play,
+  SquareTerminal,
+  RefreshCw,
+  CheckCircle2,
+  Copy,
+  Check,
+  Zap,
+  Shield,
+  Network,
+  Trash2,
+} from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
+
+import { VisualFlowInspector } from "@/components/ui/visual-flow-inspector";
 
 interface TerminalLine {
   text: string;
@@ -10,57 +24,80 @@ interface TerminalLine {
   delay?: number;
 }
 
+const COMMAND_SUGGESTIONS = [
+  { cmd: "query-rag", desc: "Audit RAG evidence verification pipeline" },
+  { cmd: "query-agent", desc: "Execute stateful 8-node LangGraph agent flow" },
+  { cmd: "metrics", desc: "Print production reliability & TTFB metrics" },
+  { cmd: "stack", desc: "Render full infrastructure tech stack" },
+  { cmd: "about", desc: "Print engineer profile details" },
+  { cmd: "clear", desc: "Clear console history buffer" },
+];
+
 export function TerminalDemo() {
+  const [viewMode, setViewMode] = useState<"console" | "visual">("console");
   const [input, setInput] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [activeNodeStep, setActiveNodeStep] = useState(0);
   const [history, setHistory] = useState<TerminalLine[]>([
     { text: "Mehedi Hasan AI Systems Engine v1.0.0 initialized.", type: "system" },
     { text: 'Type "help" to see available systems queries, or click a shortcut below.', type: "system" },
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [suggestions, setSuggestions] = useState<typeof COMMAND_SUGGESTIONS>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
-  // Auto-scroll to bottom of terminal container only (avoids scrolling window)
+  // Auto-scroll to bottom of terminal container only
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [history]);
 
-  // Focus input only when section becomes visible (NOT on page load)
+  // Handle Autocompletion Suggestions as user types
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !isTyping) {
-            // Only focus if user has scrolled there intentionally, not on page load
-            // Use a small delay to ensure it doesn't fire before page settling
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, [isTyping]);
+    const trimmed = input.trim().toLowerCase();
+    if (!trimmed || isTyping) {
+      setSuggestions([]);
+      setSelectedIndex(0);
+      return;
+    }
+
+    const matches = COMMAND_SUGGESTIONS.filter((s) => s.cmd.startsWith(trimmed));
+    setSuggestions(matches);
+    setSelectedIndex(0);
+  }, [input, isTyping]);
 
   const focusInput = () => {
     inputRef.current?.focus();
+  };
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const textToCopy = history.map((h) => h.text).join("\n");
+    navigator.clipboard.writeText(textToCopy);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setHistory([]);
   };
 
   const executeCommand = async (cmd: string) => {
     const trimmed = cmd.trim().toLowerCase();
     if (!trimmed) return;
 
-    // Add input to history
+    setSuggestions([]);
     setHistory((prev) => [...prev, { text: `mehedi@systems:~$ ${cmd}`, type: "input" }]);
     setIsTyping(true);
+    setActiveNodeStep(1);
 
-    // Simulate system thinking delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 250));
 
     let response: TerminalLine[] = [];
 
@@ -77,8 +114,10 @@ export function TerminalDemo() {
     } else if (trimmed === "clear") {
       setHistory([]);
       setIsTyping(false);
+      setActiveNodeStep(0);
       return;
     } else if (trimmed === "query-rag" || trimmed === "query rag") {
+      setActiveNodeStep(2);
       response = [
         { text: "⟳ Connecting to ChromaDB & BM25 sparse index...", type: "system" },
         { text: "✓ Dense vector matches: 2 docs (ChromaDB)", type: "success" },
@@ -90,6 +129,7 @@ export function TerminalDemo() {
         { text: '→ Output: "MindStack resolves hallucinations at retrieval boundaries. By combining BM25 exact matches with dense embeddings and validating context compatibility via NLI model entailment, we refuse processing when factual evidence is absent, achieving 95% groundedness on QA benchmarks."', type: "output" },
       ];
     } else if (trimmed === "query-agent" || trimmed === "query agent") {
+      setActiveNodeStep(3);
       response = [
         { text: "⟳ Compiling state graph (LangGraph) with PostgreSQL checkpointers...", type: "system" },
         { text: "✓ Nodes compiled: 8, Edges compiled: 9", type: "success" },
@@ -147,9 +187,8 @@ export function TerminalDemo() {
         const data = await res.json();
         const fullText = data.text || "No response generated.";
 
-        // Typewriter streaming simulation
         setHistory((prev) => [...prev, { text: "", type: "output" }]);
-        
+
         let currentText = "";
         const words = fullText.split(" ");
         for (let w = 0; w < words.length; w++) {
@@ -170,22 +209,43 @@ export function TerminalDemo() {
         ]);
       }
       setIsTyping(false);
+      setActiveNodeStep(4);
       return;
     }
 
-    // Append responses line by line to simulate real output streaming
     for (let i = 0; i < response.length; i++) {
       await new Promise((resolve) => setTimeout(resolve, 150));
       setHistory((prev) => [...prev, response[i]]);
     }
 
     setIsTyping(false);
+    setActiveNodeStep(4);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Tab" && suggestions.length > 0) {
+      e.preventDefault();
+      setInput(suggestions[selectedIndex].cmd);
+      setSuggestions([]);
+      return;
+    }
+
+    if (e.key === "ArrowDown" && suggestions.length > 0) {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % suggestions.length);
+      return;
+    }
+
+    if (e.key === "ArrowUp" && suggestions.length > 0) {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev - 1 + suggestions.length) % suggestions.length);
+      return;
+    }
+
     if (e.key === "Enter") {
-      const cmd = input;
+      const cmd = suggestions.length > 0 ? suggestions[selectedIndex].cmd : input;
       setInput("");
+      setSuggestions([]);
       executeCommand(cmd);
     }
   };
@@ -199,77 +259,183 @@ export function TerminalDemo() {
   };
 
   return (
-    <section ref={sectionRef} id="terminal" className="px-4 py-24 sm:px-6 lg:px-8 bg-[#020804] relative">
+    <section ref={sectionRef} id="terminal" className="px-4 py-24 sm:px-6 lg:px-8 bg-[#020804] relative select-none">
       <div className="absolute bottom-10 right-0 w-72 h-72 bg-[#10b981]/5 rounded-full filter blur-[90px] pointer-events-none" />
-      
+
       <div className="mx-auto max-w-4xl">
         <SectionHeading
-          eyebrow="Interactive Demo"
+          eyebrow="Interactive AI Assistant"
           title="Query the systems directly. Prove the architecture."
-          description="Interactive, simulated terminal showing how Mehedi's systems compute RAG evaluations, process stateful graph routines, and calibrate agent output groundedness."
+          description="Interactive terminal & visual flow inspector showing how Mehedi's systems compute RAG evaluations, process stateful graph routines, and calibrate agent output groundedness."
         />
 
-        {/* Terminal Case Wrapper */}
-        <div 
+        {/* Outer Container */}
+        <div
           onClick={focusInput}
-          className="mt-12 rounded-2xl border border-white/10 bg-[#020c06]/85 overflow-hidden shadow-2xl shadow-black/80 flex flex-col font-mono text-sm h-[480px]"
+          className="mt-12 rounded-2xl border border-white/10 bg-[#020c06]/85 overflow-hidden shadow-2xl shadow-black/80 flex flex-col font-mono text-sm"
         >
-          {/* Terminal Title Bar */}
-          <div className="flex items-center justify-between px-5 py-3 bg-[#03150a]/90 border-b border-white/5 select-none shrink-0">
-            <div className="flex items-center gap-2">
-              <SquareTerminal size={16} className="text-[#34d399]" />
-              <span className="text-xs font-semibold text-slate-300">mehedi@ai-systems: ~</span>
-            </div>
+          {/* Enhanced System Telemetry Header */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-[#03150a]/95 border-b border-white/5 shrink-0 select-none">
             
-            {/* Terminal Buttons */}
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/30 border border-red-500/50" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/30 border border-yellow-500/50" />
-              <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]/30 border border-[#10b981]/50" />
-            </div>
-          </div>
-
-          {/* Terminal Output Display */}
-          <div 
-            ref={containerRef}
-            className="flex-1 overflow-y-auto p-6 space-y-2 select-text scrollbar-thin"
-          >
-            {history.map((line, idx) => (
-              <div 
-                key={idx} 
-                className={`leading-relaxed whitespace-pre-wrap ${
-                  line.type === "input" ? "text-white font-bold" :
-                  line.type === "system" ? "text-slate-400" :
-                  line.type === "success" ? "text-[#34d399]" :
-                  line.type === "error" ? "text-red-400" : "text-emerald-100"
+            {/* View Mode Toggle Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewMode("console");
+                }}
+                className={`px-3 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === "console"
+                    ? "bg-[#10b981]/15 text-[#34d399] border border-[#10b981]/30 font-semibold"
+                    : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
                 }`}
               >
-                {line.text}
+                <SquareTerminal size={13} />
+                <span>Console</span>
+              </button>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewMode("visual");
+                }}
+                className={`px-3 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
+                  viewMode === "visual"
+                    ? "bg-[#10b981]/15 text-[#34d399] border border-[#10b981]/30 font-semibold"
+                    : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                }`}
+              >
+                <Network size={13} />
+                <span>Visual Flow</span>
+              </button>
+            </div>
+
+            {/* Live System Telemetry Status Badges */}
+            <div className="hidden sm:flex items-center gap-4 text-[10px] text-slate-400 font-mono">
+              <div className="flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10b981] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10b981]"></span>
+                </span>
+                <span className="text-[#34d399] font-medium">ONLINE</span>
               </div>
-            ))}
-            
-            {/* Blinking loader when system types */}
-            {isTyping && (
-              <div className="text-slate-400 flex items-center gap-2 select-none">
-                <RefreshCw size={14} className="animate-spin text-[#34d399]" />
-                <span>Computing pipeline operations...</span>
+
+              <div className="flex items-center gap-1">
+                <Zap size={11} className="text-[#34d399]" />
+                <span>p95: 8.68ms</span>
               </div>
-            )}
+
+              <div className="flex items-center gap-1">
+                <Shield size={11} className="text-[#34d399]" />
+                <span>Evals: 95.0%</span>
+              </div>
+            </div>
+
+            {/* Quick Action Toolbar */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopy}
+                title="Copy Terminal Logs"
+                className="p-1.5 rounded bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              >
+                {copied ? <Check size={14} className="text-[#34d399]" /> : <Copy size={14} />}
+              </button>
+
+              <button
+                onClick={handleClear}
+                title="Clear Output Buffer"
+                className="p-1.5 rounded bg-white/5 border border-white/5 text-slate-400 hover:text-red-400 hover:bg-white/10 transition cursor-pointer"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
           </div>
 
-          {/* Terminal Input Line */}
-          <div className="px-6 py-4 bg-[#03150a]/60 border-t border-white/5 flex items-center gap-2 shrink-0 select-none">
-            <span className="text-[#34d399] font-bold">mehedi@systems:~$</span>
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isTyping}
-              className="flex-1 bg-transparent text-white focus:outline-none caret-[#10b981]"
-              placeholder={isTyping ? "Awaiting processing..." : "Type query or click shortcut below..."}
+          {/* MODE 1: TERMINAL CONSOLE VIEW */}
+          {viewMode === "console" && (
+            <div className="h-[360px] overflow-y-auto p-6 space-y-2 select-text scrollbar-thin" ref={containerRef}>
+              {history.map((line, idx) => (
+                <div
+                  key={idx}
+                  className={`leading-relaxed whitespace-pre-wrap ${
+                    line.type === "input"
+                      ? "text-white font-bold"
+                      : line.type === "system"
+                      ? "text-slate-400"
+                      : line.type === "success"
+                      ? "text-[#34d399]"
+                      : line.type === "error"
+                      ? "text-red-400"
+                      : "text-emerald-100"
+                  }`}
+                >
+                  {line.text}
+                </div>
+              ))}
+
+              {isTyping && (
+                <div className="text-slate-400 flex items-center gap-2 select-none">
+                  <RefreshCw size={14} className="animate-spin text-[#34d399]" />
+                  <span>Computing pipeline operations...</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* MODE 2: VISUAL FLOW INSPECTOR VIEW */}
+          {viewMode === "visual" && (
+            <VisualFlowInspector
+              activeStep={activeNodeStep}
+              onReturnToConsole={() => setViewMode("console")}
             />
+          )}
+
+          {/* PERSISTENT INPUT BAR & AUTOCOMPLETION (Visible in both Console & Visual Flow modes) */}
+          <div className="relative px-6 py-4 bg-[#03150a]/80 border-t border-white/5 shrink-0">
+            {/* Autocompletion Popup */}
+            {suggestions.length > 0 && (
+              <div className="absolute bottom-full left-6 mb-2 w-72 rounded-xl border border-[#10b981]/30 bg-[#020c06]/95 backdrop-blur-xl p-2 shadow-2xl z-20 space-y-1">
+                <div className="text-[9px] font-mono text-slate-500 uppercase px-2.5 py-1 flex justify-between">
+                  <span>Command Suggestions</span>
+                  <span>Tab to complete</span>
+                </div>
+                {suggestions.map((s, idx) => (
+                  <div
+                    key={s.cmd}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setInput(s.cmd);
+                      setSuggestions([]);
+                      focusInput();
+                    }}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-mono cursor-pointer flex flex-col transition-colors ${
+                      idx === selectedIndex
+                        ? "bg-[#10b981]/20 text-[#34d399]"
+                        : "text-slate-300 hover:bg-white/5"
+                    }`}
+                  >
+                    <span className="font-semibold text-[#34d399]">{s.cmd}</span>
+                    <span className="text-[10px] text-slate-400 font-sans">{s.desc}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2">
+              <span className="text-[#34d399] font-bold">mehedi@systems:~$</span>
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isTyping}
+                className="flex-1 bg-transparent text-white focus:outline-none caret-[#10b981]"
+                placeholder={
+                  isTyping ? "Awaiting processing..." : "Type command or custom query (Press Tab to autocomplete)..."
+                }
+              />
+            </div>
           </div>
         </div>
 
@@ -284,7 +450,7 @@ export function TerminalDemo() {
             <Play size={10} />
             query-rag
           </button>
-          
+
           <button
             onClick={(e) => handleShortcutClick(e, "query-agent")}
             disabled={isTyping}
@@ -293,7 +459,7 @@ export function TerminalDemo() {
             <Play size={10} />
             query-agent
           </button>
-          
+
           <button
             onClick={(e) => handleShortcutClick(e, "metrics")}
             disabled={isTyping}
@@ -302,7 +468,7 @@ export function TerminalDemo() {
             <CheckCircle2 size={10} />
             sys-metrics
           </button>
-          
+
           <button
             onClick={(e) => handleShortcutClick(e, "stack")}
             disabled={isTyping}
