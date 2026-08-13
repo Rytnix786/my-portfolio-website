@@ -203,12 +203,12 @@ export function InteractiveStory() {
       if (!active) return;
       if (i <= targetText.length) {
         setTerminalText(targetText.slice(0, i));
-        i += 2;
+        i += 6;
       } else {
         setTerminalText(targetText);
         clearInterval(interval);
       }
-    }, 10);
+    }, 30);
 
     return () => {
       active = false;

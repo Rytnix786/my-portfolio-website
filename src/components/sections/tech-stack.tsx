@@ -17,8 +17,8 @@ export function TechStack() {
   ]; // Models + Frontend
 
   // Duplicate arrays to make scrolling seamless
-  const duplicatedTrack1 = [...track1Skills, ...track1Skills, ...track1Skills, ...track1Skills];
-  const duplicatedTrack2 = [...track2Skills, ...track2Skills, ...track2Skills, ...track2Skills];
+  const duplicatedTrack1 = [...track1Skills, ...track1Skills];
+  const duplicatedTrack2 = [...track2Skills, ...track2Skills];
 
   return (
     <section id="stack" className="px-4 py-24 sm:px-6 lg:px-8 bg-[#020804] relative overflow-hidden">
@@ -69,6 +69,7 @@ export function TechStack() {
           {/* Track 1: Scrolls Left */}
           <div className="flex overflow-x-hidden w-full select-none">
             <motion.div
+              style={{ willChange: "transform" }}
               animate={{ x: ["0%", "-50%"] }}
               transition={{
                 repeat: Infinity,
@@ -91,6 +92,7 @@ export function TechStack() {
           {/* Track 2: Scrolls Right */}
           <div className="flex overflow-x-hidden w-full select-none">
             <motion.div
+              style={{ willChange: "transform" }}
               animate={{ x: ["-50%", "0%"] }}
               transition={{
                 repeat: Infinity,

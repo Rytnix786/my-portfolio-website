@@ -23,7 +23,6 @@ export function CustomCursor() {
     let isHidden = true;
     let isRunning = true;
     let animationFrame = 0;
-    const trackedElements = new Set<Element>();
 
     const onMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
@@ -58,45 +57,27 @@ export function CustomCursor() {
       }
     };
 
-    const handleHoverStart = () => setIsHovered(true);
-    const handleHoverEnd = () => setIsHovered(false);
-
-    const addHoverListeners = () => {
-      const interactiveElements = document.querySelectorAll(
-        "a, button, [role='button'], input, select, textarea, .interactive-item"
-      );
-      interactiveElements.forEach((el) => {
-        if (trackedElements.has(el)) return;
-        trackedElements.add(el);
-        el.addEventListener("mouseenter", handleHoverStart);
-        el.addEventListener("mouseleave", handleHoverEnd);
-      });
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest("a, button, [role='button'], input, select, textarea, .interactive-item")) {
+        setIsHovered(true);
+      } else {
+        setIsHovered(false);
+      }
     };
 
-    window.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseleave", onMouseLeave);
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    window.addEventListener("mouseover", handleMouseOver, { passive: true });
+    document.addEventListener("mouseleave", onMouseLeave, { passive: true });
     
-    addHoverListeners();
     animationFrame = requestAnimationFrame(updateRing);
-
-    // Watch for dynamic elements
-    const observer = new MutationObserver(() => {
-      addHoverListeners();
-    });
-    
-    observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
       isRunning = false;
       window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseover", handleMouseOver);
       document.removeEventListener("mouseleave", onMouseLeave);
       cancelAnimationFrame(animationFrame);
-      observer.disconnect();
-      
-      trackedElements.forEach((el) => {
-        el.removeEventListener("mouseenter", handleHoverStart);
-        el.removeEventListener("mouseleave", handleHoverEnd);
-      });
     };
   }, []);
 

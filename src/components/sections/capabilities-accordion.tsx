@@ -6,27 +6,27 @@ const customAccordionItems: AccordionItemData[] = [
   {
     id: 1,
     title: 'Grounded RAG',
-    imageUrl: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1974&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=75&w=800&auto=format&fit=crop',
   },
   {
     id: 2,
     title: 'Agentic Workflows',
-    imageUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=80&w=2070',
+    imageUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?q=75&w=800&auto=format&fit=crop',
   },
   {
     id: 3,
     title: 'Backend Systems',
-    imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2070&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=75&w=800&auto=format&fit=crop',
   },
   {
     id: 4,
     title: 'Product Delivery',
-    imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=75&w=800&auto=format&fit=crop',
   },
   {
     id: 5,
     title: 'Evals & Refusal QA',
-    imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2070&auto=format&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=75&w=800&auto=format&fit=crop',
   },
 ];
 

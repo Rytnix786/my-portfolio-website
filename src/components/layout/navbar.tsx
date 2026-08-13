@@ -40,8 +40,15 @@ export function Navbar() {
       if (el) observer.observe(el);
     });
 
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 80);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 80);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     const handleResize = () => {
@@ -52,7 +59,7 @@ export function Navbar() {
     window.addEventListener("resize", handleResize, { passive: true });
 
     // Initial check
-    handleScroll();
+    setIsScrolled(window.scrollY > 80);
     handleResize();
 
     return () => {

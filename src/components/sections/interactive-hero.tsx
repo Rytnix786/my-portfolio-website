@@ -134,13 +134,24 @@ export function InteractiveHero() {
       return;
     }
 
+    let idleId: number | undefined;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    const animationId = window.requestAnimationFrame(() => {
-      timeoutId = globalThis.setTimeout(() => setShouldLoadSpline(true), 250);
-    });
+
+    if ("requestIdleCallback" in window) {
+      idleId = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(
+        () => {
+          setShouldLoadSpline(true);
+        },
+        { timeout: 1500 }
+      );
+    } else {
+      timeoutId = globalThis.setTimeout(() => setShouldLoadSpline(true), 1000);
+    }
 
     return () => {
-      window.cancelAnimationFrame(animationId);
+      if (idleId !== undefined && "cancelIdleCallback" in window) {
+        (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+      }
       if (timeoutId !== undefined) {
         globalThis.clearTimeout(timeoutId);
       }
