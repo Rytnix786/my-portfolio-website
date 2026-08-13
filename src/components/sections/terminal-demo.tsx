@@ -43,12 +43,15 @@ export function TerminalDemo() {
     { text: 'Type "help" to see available systems queries, or click a shortcut below.', type: "system" },
   ]);
   const [isTyping, setIsTyping] = useState(false);
-  const [suggestions, setSuggestions] = useState<typeof COMMAND_SUGGESTIONS>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+
+  const trimmedInput = input.trim().toLowerCase();
+  const suggestions = (!trimmedInput || isTyping)
+    ? []
+    : COMMAND_SUGGESTIONS.filter((s) => s.cmd.startsWith(trimmedInput));
 
   // Auto-scroll to bottom of terminal container only
   useEffect(() => {
@@ -56,20 +59,6 @@ export function TerminalDemo() {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [history]);
-
-  // Handle Autocompletion Suggestions as user types
-  useEffect(() => {
-    const trimmed = input.trim().toLowerCase();
-    if (!trimmed || isTyping) {
-      setSuggestions([]);
-      setSelectedIndex(0);
-      return;
-    }
-
-    const matches = COMMAND_SUGGESTIONS.filter((s) => s.cmd.startsWith(trimmed));
-    setSuggestions(matches);
-    setSelectedIndex(0);
-  }, [input, isTyping]);
 
   const focusInput = () => {
     inputRef.current?.focus();
@@ -92,7 +81,6 @@ export function TerminalDemo() {
     const trimmed = cmd.trim().toLowerCase();
     if (!trimmed) return;
 
-    setSuggestions([]);
     setHistory((prev) => [...prev, { text: `mehedi@systems:~$ ${cmd}`, type: "input" }]);
     setIsTyping(true);
     setActiveNodeStep(1);
@@ -189,14 +177,13 @@ export function TerminalDemo() {
 
         setHistory((prev) => [...prev, { text: "", type: "output" }]);
 
-        let currentText = "";
         const words = fullText.split(" ");
         for (let w = 0; w < words.length; w++) {
-          currentText += (w === 0 ? "" : " ") + words[w];
+          const chunkText = words.slice(0, w + 1).join(" ");
           setHistory((prev) => {
             const nextHistory = [...prev];
             if (nextHistory.length > 0) {
-              nextHistory[nextHistory.length - 1] = { text: currentText, type: "output" };
+              nextHistory[nextHistory.length - 1] = { text: chunkText, type: "output" };
             }
             return nextHistory;
           });
@@ -226,7 +213,6 @@ export function TerminalDemo() {
     if (e.key === "Tab" && suggestions.length > 0) {
       e.preventDefault();
       setInput(suggestions[selectedIndex].cmd);
-      setSuggestions([]);
       return;
     }
 
@@ -245,7 +231,6 @@ export function TerminalDemo() {
     if (e.key === "Enter") {
       const cmd = suggestions.length > 0 ? suggestions[selectedIndex].cmd : input;
       setInput("");
-      setSuggestions([]);
       executeCommand(cmd);
     }
   };
@@ -405,7 +390,6 @@ export function TerminalDemo() {
                     onClick={(e) => {
                       e.stopPropagation();
                       setInput(s.cmd);
-                      setSuggestions([]);
                       focusInput();
                     }}
                     className={`px-2.5 py-1.5 rounded-lg text-xs font-mono cursor-pointer flex flex-col transition-colors ${

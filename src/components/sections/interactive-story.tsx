@@ -228,7 +228,7 @@ export function InteractiveStory() {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const milestoneId = entry.target.id.replace("card-", "");
-          setActiveTab(milestoneId);
+          setActiveTab((prev) => (prev !== milestoneId ? milestoneId : prev));
         }
       });
     }, observerOptions);

@@ -4,10 +4,14 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { projects } from "@/data/portfolio";
 
-import { ProjectDrawer } from "@/components/ui/project-drawer";
+const ProjectDrawer = dynamic(
+  () => import("@/components/ui/project-drawer").then((mod) => mod.ProjectDrawer),
+  { ssr: false }
+);
 
 // Reusable 3D Tilt Card component
 function ProjectCard({

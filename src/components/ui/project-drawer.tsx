@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { X, ExternalLink, GitBranch, ShieldCheck, Cpu, Database, CheckCircle2, Terminal, ArrowUpRight } from "lucide-react";
+import { X, GitBranch, ShieldCheck, Cpu, Database, CheckCircle2, Terminal, ArrowUpRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { projects } from "@/data/portfolio";
 

@@ -14,22 +14,33 @@ export function Background() {
     let currentX = 0;
     let currentY = 0;
     let frameId = 0;
-    let running = true;
+    let running = false;
+
+    const updateGlow = () => {
+      const dx = targetX - currentX;
+      const dy = targetY - currentY;
+      
+      currentX += dx * 0.18;
+      currentY += dy * 0.18;
+      glow.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+
+      if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
+        frameId = requestAnimationFrame(updateGlow);
+      } else {
+        running = false;
+      }
+    };
 
     const handleMouseMove = (e: MouseEvent) => {
       targetX = e.clientX - 200;
       targetY = e.clientY - 200;
+      if (!running) {
+        running = true;
+        frameId = requestAnimationFrame(updateGlow);
+      }
     };
 
-    const updateGlow = () => {
-      currentX += (targetX - currentX) * 0.18;
-      currentY += (targetY - currentY) * 0.18;
-      glow.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-      if (running) frameId = requestAnimationFrame(updateGlow);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    frameId = requestAnimationFrame(updateGlow);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
 
     return () => {
       running = false;

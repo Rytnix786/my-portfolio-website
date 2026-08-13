@@ -134,28 +134,28 @@ export function InteractiveHero() {
       return;
     }
 
-    let idleId: number | undefined;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
+    // Defer Spline WebGL canvas load until initial page paint & hydration settle cleanly
     if ("requestIdleCallback" in window) {
-      idleId = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(
+      const idleId = (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(
         () => {
-          setShouldLoadSpline(true);
+          timeoutId = globalThis.setTimeout(() => setShouldLoadSpline(true), 1500);
         },
-        { timeout: 1500 }
+        { timeout: 2000 }
       );
+      return () => {
+        if ("cancelIdleCallback" in window) {
+          (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+        }
+        if (timeoutId !== undefined) globalThis.clearTimeout(timeoutId);
+      };
     } else {
-      timeoutId = globalThis.setTimeout(() => setShouldLoadSpline(true), 1000);
+      timeoutId = globalThis.setTimeout(() => setShouldLoadSpline(true), 2000);
+      return () => {
+        if (timeoutId !== undefined) globalThis.clearTimeout(timeoutId);
+      };
     }
-
-    return () => {
-      if (idleId !== undefined && "cancelIdleCallback" in window) {
-        (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
-      }
-      if (timeoutId !== undefined) {
-        globalThis.clearTimeout(timeoutId);
-      }
-    };
   }, [mounted, isMobile]);
 
   // Intercept scroll/wheel events in capture phase to prevent Spline scroll hijacking
@@ -164,12 +164,10 @@ export function InteractiveHero() {
     if (!container || isMobile) return;
 
     const handleWheel = (e: WheelEvent) => {
-      // Prevent Spline from calling preventDefault() on wheel scroll
       e.stopPropagation();
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      // Prevent Spline from calling preventDefault() on touch swiping
       e.stopPropagation();
     };
 
@@ -193,36 +191,23 @@ export function InteractiveHero() {
     }
   };
 
-  const nameLetters = Array.from("Mehedi Hasan");
-  const descriptionText = "Production-minded AI systems built in days. Multi-agent orchestration deployed with zero-trust architecture. Grounded RAG pipelines set up for your entire enterprise. All of it done right, not just fast.";
-  const descriptionWords = descriptionText.split(" ");
-
   const containerVariants = {
-    hidden: {},
+    hidden: { opacity: 0 },
     visible: {
+      opacity: 1,
       transition: {
-        staggerChildren: 0.03,
+        staggerChildren: 0.08,
+        delayChildren: 0.05,
       },
     },
   };
 
-  const nameLetterVariants = {
-    hidden: { opacity: 0, y: 24, filter: "blur(4px)" },
-    visible: {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-      transition: { type: "spring" as const, stiffness: 200, damping: 14 },
-    },
-  };
-
   const itemVariants = {
-    hidden: { opacity: 0, filter: "blur(4px)", y: 12 },
+    hidden: { opacity: 0, y: 16 },
     visible: {
       opacity: 1,
-      filter: "blur(0px)",
       y: 0,
-      transition: { duration: 0.55, ease: "easeOut" as const },
+      transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1.0] as const },
     },
   };
 
@@ -230,15 +215,14 @@ export function InteractiveHero() {
     <section id="top" className="relative min-h-screen flex items-end bg-hero-bg overflow-hidden">
       {/* Spline 3D Background */}
       <div ref={splineContainerRef} className="absolute inset-0 pointer-events-auto">
-        {shouldLoadSpline && (
+        {shouldLoadSpline ? (
           <Spline
             scene="https://prod.spline.design/Slk6b8kz3LRlKiyk/scene.splinecode"
             className="w-full h-full"
           />
-        )}
-        {(isMobile || !mounted || !shouldLoadSpline) && (
+        ) : (
           <div className="absolute inset-0 bg-hero-bg">
-            {/* A beautiful mobile fallback: dynamic pulsing green radial glow */}
+            {/* Ultra-fast responsive ambient emerald glow background placeholder */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(16,185,129,0.14),transparent_60%)] animate-pulse" style={{ animationDuration: "8s" }} />
           </div>
         )}
@@ -254,18 +238,13 @@ export function InteractiveHero() {
         animate="visible"
         className="relative z-10 pointer-events-none w-full max-w-[90%] sm:max-w-md lg:max-w-3xl px-6 md:px-10 pb-16 pt-32 text-left"
       >
-        {/* Staggered Name Characters */}
-        <h1 className="text-[clamp(2.5rem,7.5vw,5.5rem)] font-bold leading-[1.05] tracking-[-0.05em] text-white mb-2 md:mb-4 uppercase select-none">
-          {nameLetters.map((char, index) => (
-            <motion.span
-              key={index}
-              variants={nameLetterVariants}
-              className="inline-block whitespace-pre"
-            >
-              {char}
-            </motion.span>
-          ))}
-        </h1>
+        {/* Name Title */}
+        <motion.h1 
+          variants={itemVariants}
+          className="text-[clamp(2.5rem,7.5vw,5.5rem)] font-bold leading-[1.05] tracking-[-0.05em] text-white mb-2 md:mb-4 uppercase select-none"
+        >
+          Mehedi Hasan
+        </motion.h1>
 
         {/* Typewriter role cycler */}
         <motion.div
@@ -275,18 +254,13 @@ export function InteractiveHero() {
           I am a <TypewriterRoles />
         </motion.div>
 
-        {/* Word-by-word reveal description */}
-        <p className="text-slate-300/90 text-[clamp(0.85rem,1.4vw,1.15rem)] font-light mb-6 md:mb-8 max-w-2xl leading-relaxed select-none">
-          {descriptionWords.map((word, index) => (
-            <motion.span
-              key={index}
-              variants={itemVariants}
-              className="inline-block mr-[0.3em]"
-            >
-              {word}
-            </motion.span>
-          ))}
-        </p>
+        {/* Hero description */}
+        <motion.p 
+          variants={itemVariants}
+          className="text-slate-300/90 text-[clamp(0.85rem,1.4vw,1.15rem)] font-light mb-6 md:mb-8 max-w-2xl leading-relaxed select-none"
+        >
+          Production-minded AI systems built in days. Multi-agent orchestration deployed with zero-trust architecture. Grounded RAG pipelines set up for your entire enterprise. All of it done right, not just fast.
+        </motion.p>
 
         {/* Tactile Magnetic Buttons */}
         <motion.div

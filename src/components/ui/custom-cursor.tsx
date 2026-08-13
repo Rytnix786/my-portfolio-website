@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     // Only run on client and non-touch devices
@@ -23,6 +22,25 @@ export function CustomCursor() {
     let isHidden = true;
     let isRunning = true;
     let animationFrame = 0;
+    let isHovered = false;
+
+    const setHoverState = (hover: boolean) => {
+      if (isHovered === hover) return;
+      isHovered = hover;
+      if (hover) {
+        dot.style.transform = "translate(-50%, -50%) scale(1.5)";
+        dot.style.backgroundColor = "#34d399";
+        ring.style.transform = "translate(-50%, -50%) scale(1.5)";
+        ring.style.borderColor = "#34d399";
+        ring.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
+      } else {
+        dot.style.transform = "translate(-50%, -50%) scale(1)";
+        dot.style.backgroundColor = "#10b981";
+        ring.style.transform = "translate(-50%, -50%) scale(1)";
+        ring.style.borderColor = "rgba(16, 185, 129, 0.4)";
+        ring.style.backgroundColor = "transparent";
+      }
+    };
 
     const onMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
@@ -60,9 +78,9 @@ export function CustomCursor() {
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (target && target.closest("a, button, [role='button'], input, select, textarea, .interactive-item")) {
-        setIsHovered(true);
+        setHoverState(true);
       } else {
-        setIsHovered(false);
+        setHoverState(false);
       }
     };
 
@@ -88,8 +106,8 @@ export function CustomCursor() {
         className="custom-cursor transition-all duration-200"
         style={{
           opacity: 0,
-          transform: `translate(-50%, -50%) scale(${isHovered ? 1.5 : 1})`,
-          backgroundColor: isHovered ? "#34d399" : "#10b981",
+          transform: "translate(-50%, -50%) scale(1)",
+          backgroundColor: "#10b981",
         }}
       />
       <div
@@ -97,9 +115,9 @@ export function CustomCursor() {
         className="custom-cursor-ring transition-all duration-300"
         style={{
           opacity: 0,
-          transform: `translate(-50%, -50%) scale(${isHovered ? 1.5 : 1})`,
-          borderColor: isHovered ? "#34d399" : "rgba(16, 185, 129, 0.4)",
-          backgroundColor: isHovered ? "rgba(16, 185, 129, 0.15)" : "transparent",
+          transform: "translate(-50%, -50%) scale(1)",
+          borderColor: "rgba(16, 185, 129, 0.4)",
+          backgroundColor: "transparent",
         }}
       />
     </>

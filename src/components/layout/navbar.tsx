@@ -58,11 +58,14 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize, { passive: true });
 
-    // Initial check
-    setIsScrolled(window.scrollY > 80);
-    handleResize();
+    // Initial check deferred out of synchronous effect execution
+    const initTimer = setTimeout(() => {
+      setIsScrolled(window.scrollY > 80);
+      handleResize();
+    }, 0);
 
     return () => {
+      clearTimeout(initTimer);
       observer.disconnect();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
